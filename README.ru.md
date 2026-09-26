@@ -189,7 +189,7 @@ restTime ───────────────────────�
 | Состояние | React-хуки в `App.tsx` — без глобального стора и Context | — |
 | Хранение | `localStorage` | — |
 | Шрифт | Inter (Google Fonts, SIL OFL 1.1) | — |
-| AI | `GEMINI_API_KEY` уже прокидывается в `vite.config.ts`, но **его никто не читает** | — |
+| AI | Не интегрирован — прототип из AI Studio удалён; AI-фаза пойдёт через серверный прокси | — |
 
 ## 🏗️ Архитектура
 
@@ -247,7 +247,7 @@ src/theme/tokens.css        ← SSOT: ~800 переменных M3 + расши�
 ```
 flow/
 ├── index.html                    # точка входа Vite, подключает Inter
-├── vite.config.ts                # порт 3000, host 0.0.0.0, плагин Tailwind, define GEMINI_API_KEY
+├── vite.config.ts                # порт 3000, host 0.0.0.0, плагин Tailwind, алиас @
 ├── tailwind.config.ts            # маппинг CSS-переменных → утилиты, формы/easing/duration M3
 ├── tsconfig.json                 # ES2022, bundler-резолюция, @/* → корень проекта
 ├── .clinerules / .cursorrules    # конституция агента: правила гибридного UI, запрещённые действия

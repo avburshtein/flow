@@ -187,7 +187,7 @@ Tap the mic in the bottom bar and speak. Everything is rule-based (regex + conte
 | State | React hooks in `App.tsx` — no global store, no Context yet | — |
 | Persistence | `localStorage` | — |
 | Fonts | Inter (Google Fonts, SIL OFL 1.1) | — |
-| AI | `GEMINI_API_KEY` is already injected by `vite.config.ts`, **nothing consumes it yet** | — |
+| AI | Not integrated — the original AI Studio prototype was removed; the AI phase will run through a server-side proxy | — |
 
 ## 🏗️ Architecture
 
@@ -244,7 +244,7 @@ Rules the code follows (and reviewers should enforce):
 ```
 flow/
 ├── index.html                    # Vite entry point, loads Inter
-├── vite.config.ts                # port 3000, host 0.0.0.0, Tailwind plugin, GEMINI_API_KEY define
+├── vite.config.ts                # port 3000, host 0.0.0.0, Tailwind plugin, @ alias
 ├── tailwind.config.ts            # maps CSS variables → utility classes, M3 shapes/easings/durations
 ├── tsconfig.json                 # ES2022, bundler resolution, @/* → project root
 ├── .clinerules / .cursorrules    # agent constitution: hybrid UI rules, forbidden actions
