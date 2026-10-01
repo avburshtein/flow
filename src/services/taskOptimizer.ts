@@ -128,24 +128,24 @@ export const suggestWeight = (title: string): TaskWeight => {
 
   // Логика принятия решения
   if (hasDeepKeyword && !hasQuickKeyword) {
-    return 'deep';
+    return TaskWeight.deep;
   }
 
   if (hasQuickKeyword && !hasDeepKeyword) {
-    return 'quick';
+    return TaskWeight.quick;
   }
 
   // Если оба или ни одного — используем эвристику длины
   if (isShortTitle) {
-    return 'quick';
+    return TaskWeight.quick;
   }
 
   if (isLongTitle) {
-    return 'deep';
+    return TaskWeight.deep;
   }
 
   // По умолчанию — focused
-  return 'focused';
+  return TaskWeight.focused;
 };
 
 /**

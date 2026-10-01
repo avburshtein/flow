@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
 import { Settings, Lightbulb, Mic, Plus, Brain } from 'lucide-react';
+import { TRANSLATIONS } from '../../constants.tsx';
+import type { PrimaryInputMethod } from '../../types.ts';
+
+/** Figma: боковые кнопки тулбара 52x52 (touch target по Flow calm standard) */
+const SIDE_BTN_SX = {
+    width: 52,
+    height: 52,
+    color: 'var(--md-sys-color-on-surface-variant)',
+} as const;
 
 interface FlowToolbarProps {
     onSettingsClick: () => void;
@@ -10,6 +18,10 @@ interface FlowToolbarProps {
     onAddTaskClick: () => void;
     onSmartPlannerClick: () => void;
     isVoiceListening?: boolean;
+    language?: keyof typeof TRANSLATIONS;
+    /** Зеркалит раскладку под левую руку (thumb zone слева) */
+    isLeftHanded?: boolean;
+    primaryInputMethod?: PrimaryInputMethod;
 }
 
 export const FlowToolbar: React.FC<FlowToolbarProps> = ({
@@ -19,7 +31,11 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
     onAddTaskClick,
     onSmartPlannerClick,
     isVoiceListening = false,
+    language = 'en',
+    isLeftHanded = false,
+    primaryInputMethod = 'text',
 }) => {
+    const t = TRANSLATIONS[language];
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -41,100 +57,116 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
 
     return (
         <div
-            className={`fixed bottom-0 left-0 right-0 transition-transform duration-300 ease-out ${isVisible ? 'translate-y-0' : 'translate-y-full'
+            className={`fixed bottom-0 left-0 right-0 transition-transform duration-300 ${isVisible ? 'translate-y-0' : 'translate-y-full'
                 }`}
             style={{
                 zIndex: 100,
-                backgroundImage: 'linear-gradient(var(--flow-app-tint), var(--flow-app-tint)), var(--md-sys-color-surface-container)',
-                boxShadow: 'var(--md-sys-elevation-2)',
+                background: 'var(--md-sys-color-surface-container)',
+                boxShadow: 'var(--md-sys-elevation-shadow-2)',
+                transitionTimingFunction: 'var(--md-sys-motion-easing-emphasized-decel)',
             }}
         >
-            {/* Toolbar content */}
-            <div className="flex items-center justify-around px-4 py-3">
-                {/* Settings */}
-                <IconButton
-                    onClick={onSettingsClick}
-                    aria-label="Settings"
-                    sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '12px',
-                        color: 'var(--md-sys-color-on-surface-variant)',
-                    }}
-                >
-                    <Settings size={24} />
-                </IconButton>
+            {/* Figma: Toolbar 390x64, pad 12/16/12/16, FAB всегда по центру.
+                Левая рука -> thumb zone слева, поэтому порядок боковых действий зеркалится. */}
+            <div className="flex items-center justify-between px-4 py-3 min-h-[56px]">
+                <div className="flex items-center" style={{ gap: '106px' }}>
+                    {isLeftHanded ? (
+                        <>
+                            <IconButton
+                                onClick={onSmartPlannerClick}
+                                aria-label={t.smartPlanner}
+                                sx={SIDE_BTN_SX}
+                            >
+                                <Brain size={24} strokeWidth={2} />
+                            </IconButton>
+                            <IconButton
+                                onClick={onVoiceClick}
+                                aria-label={t.voice}
+                                aria-pressed={isVoiceListening}
+                                sx={{
+                                    ...SIDE_BTN_SX,
+                                    color: isVoiceListening
+                                        ? 'var(--md-sys-color-primary)'
+                                        : 'var(--md-sys-color-on-surface-variant)',
+                                }}
+                            >
+                                <Mic size={24} strokeWidth={2} />
+                            </IconButton>
+                        </>
+                    ) : (
+                        <>
+                            <IconButton onClick={onSettingsClick} aria-label={t.settings} sx={SIDE_BTN_SX}>
+                                <Settings size={24} strokeWidth={2} />
+                            </IconButton>
+                            <IconButton onClick={onIdeasClick} aria-label={t.ideas} sx={SIDE_BTN_SX}>
+                                <Lightbulb size={24} strokeWidth={2} />
+                            </IconButton>
+                        </>
+                    )}
+                </div>
 
-                {/* Ideas */}
-                <IconButton
-                    onClick={onIdeasClick}
-                    aria-label="Ideas"
-                    sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '12px',
-                        color: 'var(--md-sys-color-on-surface-variant)',
-                    }}
-                >
-                    <Lightbulb size={24} />
-                </IconButton>
-
-                {/* Voice — MUI Filled Button (rounded square, M3 Corner Large) */}
-                <Button
-                    variant="contained"
-                    onClick={onVoiceClick}
-                    data-listening={isVoiceListening}
-                    sx={{
-                        borderRadius: '16px',
-                        minWidth: '56px',
-                        height: '56px',
-                        padding: 0,
-                        backgroundColor: 'var(--md-sys-color-primary)',
-                        color: 'var(--md-sys-color-on-primary)',
-                        boxShadow: 'var(--md-sys-elevation-2)',
-                        '&:hover': {
-                            backgroundColor: 'var(--md-sys-color-primary)',
-                            boxShadow: 'var(--md-sys-elevation-3)',
-                        },
-                    }}
-                >
-                    <Mic size={24} />
-                </Button>
-
-                {/* Add Task */}
-                <IconButton
+                {/* Central Smart FAB — Figma: 56x56, r=12, primary. Иконка зависит от primaryInputMethod. */}
+                <button
+                    type="button"
                     onClick={onAddTaskClick}
-                    aria-label="Add task"
-                    sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '12px',
-                        color: 'var(--md-sys-color-on-surface-variant)',
+                    aria-label={t.addTask}
+                    className="flex items-center justify-center shrink-0"
+                    style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 'var(--md-sys-shape-corner-medium)',
+                        background: 'var(--md-sys-color-primary)',
+                        color: 'var(--md-sys-color-on-primary)',
+                        boxShadow: 'var(--md-sys-elevation-shadow-2)',
                     }}
                 >
-                    <Plus size={24} />
-                </IconButton>
+                    {primaryInputMethod === 'voice'
+                        ? <Mic size={24} strokeWidth={2} />
+                        : <Plus size={24} strokeWidth={2} />}
+                </button>
 
-                {/* Smart Day Planner */}
-                <IconButton
-                    onClick={onSmartPlannerClick}
-                    aria-label="Smart Day Planner"
-                    sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '12px',
-                        color: 'var(--md-sys-color-on-surface-variant)',
-                    }}
-                >
-                    <Brain size={24} />
-                </IconButton>
+                <div className="flex items-center" style={{ gap: '106px' }}>
+                    {isLeftHanded ? (
+                        <>
+                            <IconButton onClick={onIdeasClick} aria-label={t.ideas} sx={SIDE_BTN_SX}>
+                                <Lightbulb size={24} strokeWidth={2} />
+                            </IconButton>
+                            <IconButton onClick={onSettingsClick} aria-label={t.settings} sx={SIDE_BTN_SX}>
+                                <Settings size={24} strokeWidth={2} />
+                            </IconButton>
+                        </>
+                    ) : (
+                        <>
+                            <IconButton
+                                onClick={onVoiceClick}
+                                aria-label={t.voice}
+                                aria-pressed={isVoiceListening}
+                                sx={{
+                                    ...SIDE_BTN_SX,
+                                    color: isVoiceListening
+                                        ? 'var(--md-sys-color-primary)'
+                                        : 'var(--md-sys-color-on-surface-variant)',
+                                }}
+                            >
+                                <Mic size={24} strokeWidth={2} />
+                            </IconButton>
+                            <IconButton onClick={onSmartPlannerClick} aria-label={t.smartPlanner} sx={SIDE_BTN_SX}>
+                                <Brain size={24} strokeWidth={2} />
+                            </IconButton>
+                        </>
+                    )}
+                </div>
             </div>
 
-            {/* Gesture bar */}
-            <div className="flex justify-center pb-4 pt-1">
+            {/* Gesture bar — Figma: 108x4, r=12 */}
+            <div className="flex justify-center pb-2 pt-1">
                 <div
-                    className="h-1 w-32 rounded-full"
-                    style={{ backgroundColor: 'var(--md-sys-color-on-surface)' }}
+                    className="rounded-full"
+                    style={{
+                        width: '108px',
+                        height: '4px',
+                        background: 'var(--md-sys-color-on-surface)',
+                    }}
                 />
             </div>
         </div>

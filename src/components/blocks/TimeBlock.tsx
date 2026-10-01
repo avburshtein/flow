@@ -1,5 +1,4 @@
 import React from 'react';
-import { Grid, Plus, AlertTriangle } from 'lucide-react';
 import { TimeBlockConfig, TimePeriod, Task, Language } from '../../types.ts';
 import { BLOCK_CAPACITY, TRANSLATIONS } from '../../constants.tsx';
 import TaskItem from '../TaskItem.tsx';
@@ -49,63 +48,102 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
 
   return (
     <section
-      className={`relative p-1 ${viewMode === 'vertical' ? 'min-h-[228px] h-auto' : 'h-[228px]'} flex flex-col gap-2 transition-shadow duration-200 ${isActive ? 'border-l-[3px] border-l-white/90' : ''
-        } shadow-md dark:shadow-none`}
+      className={`relative p-0 ${viewMode === 'vertical' ? 'min-h-[228px] h-auto' : 'h-[228px]'} flex flex-col overflow-hidden`}
       style={{
-        borderRadius: '24px',
+        borderRadius: 'var(--md-sys-shape-corner-extra-large)',
         background: containerColor,
-        borderColor: isNight ? 'transparent' : borderColor,
-        borderWidth: '1px',
-        borderStyle: 'solid',
+        // Figma: активный блок получает обводку outline + усиленную тень (elevation-3)
+        border: isActive ? '1px solid var(--md-sys-color-outline)' : '1px solid transparent',
+        boxShadow: isActive
+          ? 'var(--md-sys-elevation-shadow-3)'
+          : 'var(--md-sys-elevation-shadow-1)',
         animation: `block-appear 250ms var(--md-sys-motion-easing-emphasized-decel) both`,
       } as React.CSSProperties}
     >
-      {/* Header Rows */}
-      <div className="flex flex-col gap-2 px-3 pt-3">
-        {/* Header Row 1: Time Range + Capacity */}
-        <div className="flex justify-between items-center w-full">
-          <span className="text-xs font-medium opacity-70 whitespace-nowrap" style={{ color: onContainerColor }}>
-            {block.startTime} — {block.endTime}
+      {/* Header Rows — Figma: pad 16/16/8/16, gap 4 между строками */}
+      <div className="flex flex-col gap-1 px-4 pt-4 pb-2">
+        {/* Row 1: Time range (11px/500) + Capacity (12px/500), вся группа opacity 0.7 */}
+        <div
+          className="flex justify-between items-center w-full"
+          style={{ opacity: 0.7 }}
+        >
+          <span
+            className="font-medium whitespace-nowrap"
+            style={{
+              color: onContainerColor,
+              fontSize: 'var(--md-sys-typescale-label-small-size)',
+              lineHeight: 'var(--md-sys-typescale-label-small-line-height)',
+            }}
+          >
+            {block.startTime} – {block.endTime}
           </span>
           {!isNight && (
-            <span className="text-xs font-medium opacity-70 whitespace-nowrap" style={{ color: onContainerColor }}>
-              {totalPoints} / {BLOCK_CAPACITY}
+            <span
+              className="font-medium whitespace-nowrap"
+              style={{
+                color: onContainerColor,
+                fontSize: 'var(--md-sys-typescale-label-medium-size)',
+                lineHeight: 'var(--md-sys-typescale-label-medium-line-height)',
+              }}
+            >
+              {totalPoints}/{BLOCK_CAPACITY} pts
             </span>
           )}
         </div>
 
-        {/* Header Row 2: Period Name */}
-        <div>
-          <span className="text-2xl font-semibold tracking-[-0.5px]" style={{ color: onContainerColor }}>
-            {block.label}
-          </span>
-        </div>
+        {/* Row 2: Block title — Figma: 22px / weight 500 / letter-spacing -0.5 */}
+        <span
+          className="font-medium"
+          style={{
+            color: onContainerColor,
+            fontSize: 'var(--md-sys-typescale-title-large-size)',
+            lineHeight: 'var(--md-sys-typescale-title-large-line-height)',
+            letterSpacing: 'var(--md-sys-typescale-title-large-letter-spacing)',
+          }}
+        >
+          {block.label}
+        </span>
       </div>
 
-      {/* Progress Bar (visible for non-night periods) */}
+      {/* Capacity Linear — Figma: h=4px, r=full, bg #fff, stroke on-container 0.2px */}
       {!isNight && (
-        <div className="flex flex-col items-start gap-1 min-w-[4rem] px-3">
-          <div className="w-full h-1 overflow-hidden" style={{
-            borderRadius: 'var(--md-sys-shape-corner-full)',
-            background: seedOnColor,
-            border: '0.2px solid var(--flow-block-${periodId}-on-container)',
-          }}>
-            <div className="h-full transition-all duration-md-medium2 ease-md-standard" style={{
-              width: `${Math.min(capacityPercent, 100)}%`,
+        <div className="px-4">
+          <div
+            className="w-full overflow-hidden"
+            style={{
+              height: '4px',
               borderRadius: 'var(--md-sys-shape-corner-full)',
-              background: isOverCapacity ? 'var(--flow-capacity-overload)' : seedColor,
-            }}>
-            </div>
+              background: 'var(--md-sys-color-surface)',
+              boxShadow: `inset 0 0 0 0.2px ${onContainerColor}`,
+            }}
+          >
+            <div
+              className="h-full ease-md-standard"
+              style={{
+                width: `${isOverCapacity ? 100 : capacityPercent}%`,
+                borderRadius: 'var(--md-sys-shape-corner-full)',
+                background: isOverCapacity ? 'var(--flow-capacity-overload)' : seedColor,
+                transition: 'width var(--md-sys-motion-duration-medium-2) var(--md-sys-motion-easing-standard)',
+              }}
+            />
           </div>
         </div>
       )}
 
       {/* Content Slot */}
-      <div className="flex-1 relative overflow-visible w-full rounded-b-[20px] rounded-t-none">
+      <div className="flex-1 relative overflow-visible w-full">
         {isNight ? (
-          <div className="text-center pt-4 px-3">
-            <p className="text-xl font-medium text-[var(--flow-block-night-on-container)] opacity-60">
-              Wind down space. Rest well.
+          <div className="flex items-center justify-center h-full px-4">
+            <p
+              className="text-center"
+              style={{
+                color: onContainerColor,
+                opacity: 0.5,
+                fontSize: 'var(--md-sys-typescale-body-medium-size)',
+                lineHeight: 'var(--md-sys-typescale-body-medium-line-height)',
+              }}
+            >
+              {t.windDownSpace}
             </p>
           </div>
         ) : tasks.length > 0 ? (
@@ -117,44 +155,57 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
               onBubbleClick={onToggle}
             />
           ) : (
-            /* Заглушки для вертикального режима (будут заменены на TaskListItem позже) */
-            <div className="flex flex-col gap-2 px-3 pb-12 pt-1">
+            <div className="flex flex-col gap-2 px-4 pb-4 pt-1">
               {tasks.map(task => (
-                <div
+                <TaskItem
                   key={task.id}
-                  className="h-14 w-full rounded-xl flex items-center px-4"
-                  style={{ border: `1px solid var(--flow-block-${periodId}-on-container)` }}
-                >
-                  <div className="w-4 h-4 rounded-full mr-3 border opacity-50" />
-                  <span className="text-sm font-medium opacity-80" style={{ color: onContainerColor }}>
-                    {task.title}
-                  </span>
-                </div>
+                  task={task}
+                  lang={language}
+                  onToggle={onToggle}
+                  onDelete={onDelete}
+                  onUpdate={onUpdate}
+                />
               ))}
             </div>
           )
         ) : (
-          <div className="text-center pt-4 px-3">
-            <div className="w-8 h-8 mx-auto mb-2">
-              {block.id === 'morning' && getIcon('sunrise', 'w-8 h-8')}
-              {block.id === 'afternoon' && getIcon('sun', 'w-8 h-8')}
-              {block.id === 'evening' && getIcon('sunset', 'w-8 h-8')}
+          <div className="flex flex-col items-center justify-center h-full gap-2 px-4">
+            <div style={{ opacity: 0.08 }}>
+              {block.id === TimePeriod.MORNING && getIcon('sunrise', 'w-8 h-8')}
+              {block.id === TimePeriod.AFTERNOON && getIcon('sun', 'w-8 h-8')}
+              {block.id === TimePeriod.EVENING && getIcon('sunset', 'w-8 h-8')}
             </div>
-            <p className="text-lg text-[var(--flow-block-${periodId}-on-container)] opacity-8">
-              No tasks scheduled
+            <p
+              className="text-center"
+              style={{
+                color: onContainerColor,
+                opacity: 0.5,
+                fontSize: 'var(--md-sys-typescale-body-medium-size)',
+                lineHeight: 'var(--md-sys-typescale-body-medium-line-height)',
+              }}
+            >
+              {t.noTasksScheduled}
             </p>
           </div>
         )}
       </div>
 
-      {/* Inline Slot for overflow text - absolutely positioned */}
-      <div className="absolute bottom-2 left-0 right-0 px-3 z-10 pointer-events-none flex justify-center">
-        {isOverCapacity && (
-          <p className="text-xs text-[var(--md-sys-color-error)] bg-[var(--md-sys-color-error-container)] px-2 py-0.5 rounded-md">
-            Capacity exceeded
+      {/* Inline slot for overflow helper — pre-reserved to avoid layout shift */}
+      {isOverCapacity && (
+        <div className="px-4 pb-3">
+          <p
+            className="text-center font-medium"
+            style={{
+              color: onContainerColor,
+              opacity: 0.8,
+              fontSize: 'var(--md-sys-typescale-label-small-size)',
+              lineHeight: 'var(--md-sys-typescale-label-small-line-height)',
+            }}
+          >
+            {t.capacityExceeded}
           </p>
-        )}
-      </div>
+        </div>
+      )}
     </section>
   );
 };

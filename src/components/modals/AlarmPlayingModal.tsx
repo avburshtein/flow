@@ -24,7 +24,7 @@ const AlarmPlayingModal: React.FC<AlarmPlayingModalProps> = ({ settings, onStop,
         style={{
           background: 'var(--md-sys-color-surface-container-high)',
           borderRadius: 'var(--md-sys-shape-corner-extra-large)',
-          boxShadow: 'var(--md-sys-elevation-3)',
+          boxShadow: 'var(--md-sys-elevation-shadow-3)',
           minWidth: '280px',
           padding: '24px',
         }}

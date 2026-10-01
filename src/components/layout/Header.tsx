@@ -39,8 +39,11 @@ const Header: React.FC<HeaderProps> = ({
         <h1
           className="m-0 font-inter font-semibold tracking-[-0.4px] text-primary"
           style={{
-            fontSize: 'var(--md-sys-typescale-headline-large-size)',
-            lineHeight: 'var(--md-sys-typescale-headline-large-line-height)',
+            // Figma: Headline 33px / fw 600 / lh 40 / ls -0.4
+            fontSize: '33px',
+            lineHeight: '40px',
+            letterSpacing: '-0.4px',
+            color: 'var(--md-sys-color-primary)',
           }}
         >
           {getGreeting()}, {user?.name.split(' ')[0]}

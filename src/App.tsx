@@ -13,6 +13,7 @@ import {
   Recurrence,
   UserProfile,
   VoiceSettings,
+  PrimaryInputMethod,
   VoiceCommand,
   CommandType,
 } from './types.ts';
@@ -42,6 +43,8 @@ import { VoiceCommandProcessor } from './services/voice/VoiceCommandProcessor.ts
 import VoiceFeedback from './components/voice/VoiceFeedback.tsx';
 import FlowToolbar from './components/layout/FlowToolbar';
 import TaskBubble from './components/ui/TaskBubble';
+import IdeasBank from './components/modals/IdeasBank.tsx';
+import SmartPlanner from './components/modals/SmartPlanner.tsx';
 
 type ViewMode = 'day' | 'week' | 'month' | 'year';
 
@@ -96,6 +99,8 @@ const App: React.FC = () => {
   const [tempRest, setTempRest] = useState(settings.restTime);
   const [tempLang, setTempLang] = useState<Language>(settings.language);
   const [tempAlarm, setTempAlarm] = useState<AlarmConfig>(settings.alarm);
+  const [tempLeftHanded, setTempLeftHanded] = useState<boolean>(settings.isLeftHanded ?? false);
+  const [tempInputMethod, setTempInputMethod] = useState<PrimaryInputMethod>(settings.primaryInputMethod ?? 'text');
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [capacityNotification, setCapacityNotification] = useState<CapacityNotification | null>(null);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(() =>
@@ -109,6 +114,9 @@ const App: React.FC = () => {
   const [voiceError, setVoiceError] = useState<string | undefined>();
   const [showVoiceConfirmation, setShowVoiceConfirmation] = useState(false);
   const [pendingVoiceCommand, setPendingVoiceCommand] = useState<VoiceCommand | null>(null);
+  const [showIdeas, setShowIdeas] = useState(false);
+  const [showSmartPlanner, setShowSmartPlanner] = useState(false);
+  const [ideas, setIdeas] = useState<string[]>(() => readStoredJson<string[]>('flow_ideas', []));
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fadeIntervalRef = useRef<number | null>(null);
@@ -176,6 +184,10 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('flow_voice_settings', JSON.stringify(voiceSettings));
   }, [voiceSettings]);
+
+  useEffect(() => {
+    localStorage.setItem('flow_ideas', JSON.stringify(ideas));
+  }, [ideas]);
 
   useEffect(() => {
     if (!voiceSettings.enabled) {
@@ -275,6 +287,25 @@ const App: React.FC = () => {
 
   function updateTask(id: string, updates: Partial<Task>) {
     setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, ...updates } : task)));
+  }
+
+  function addIdea(title: string) {
+    setIdeas((prev) => [...prev, title]);
+  }
+
+  /** Конвертирует идею в задачу текущего блока и убирает её из банка */
+  function convertIdea(title: string) {
+    commitTask({
+      title,
+      periods: [activePeriodId],
+      priority: 'medium',
+      weight: suggestWeight(title),
+      recurrence: 'none',
+      dueDate: todayStr,
+    });
+    setIdeas((prev) => prev.filter((idea) => idea !== title));
+    setShowIdeas(false);
+    setIsTaskSheetOpen(true);
   }
 
   function navigateDate(direction: number) {
@@ -576,6 +607,8 @@ const App: React.FC = () => {
       restTime: tempRest,
       language: tempLang,
       alarm: tempAlarm,
+      isLeftHanded: tempLeftHanded,
+      primaryInputMethod: tempInputMethod,
     });
     setSettingsError(null);
     setShowSettings(false);
@@ -690,6 +723,25 @@ const App: React.FC = () => {
           onCancel={() => handleVoiceConfirmation(false)}
         />
 
+        <IdeasBank
+          isOpen={showIdeas}
+          onClose={() => setShowIdeas(false)}
+          ideas={ideas}
+          onAddIdea={addIdea}
+          onConvertIdea={convertIdea}
+          onDeleteIdea={(index) => setIdeas((prev) => prev.filter((_, i) => i !== index))}
+          language={settings.language}
+        />
+
+        <SmartPlanner
+          isOpen={showSmartPlanner}
+          onClose={() => setShowSmartPlanner(false)}
+          blocks={dynamicBlocks}
+          tasks={tasks}
+          todayStr={todayStr}
+          language={settings.language}
+        />
+
         <div className="mb-6">
           <ViewSwitcher
             viewMode={viewMode}
@@ -761,6 +813,7 @@ const App: React.FC = () => {
             viewMode={viewMode}
             todayStr={todayStr}
             language={settings.language}
+            isLeftHanded={settings.isLeftHanded}
             onNavigate={navigateDate}
             onToday={goToToday}
           />
@@ -783,16 +836,23 @@ const App: React.FC = () => {
             onTempWakeChange={setTempWake}
             onTempRestChange={setTempRest}
             onTempLangChange={setTempLang}
+            tempLeftHanded={tempLeftHanded}
+            tempInputMethod={tempInputMethod}
+            onTempLeftHandedChange={setTempLeftHanded}
+            onTempInputMethodChange={setTempInputMethod}
           />
         )}
 
         <FlowToolbar
           onSettingsClick={() => setShowSettings(true)}
-          onIdeasClick={() => undefined}
+          onIdeasClick={() => setShowIdeas(true)}
           onVoiceClick={toggleVoiceListening}
           onAddTaskClick={openTaskSheet}
-          onSmartPlannerClick={() => undefined}
+          onSmartPlannerClick={() => setShowSmartPlanner(true)}
           isVoiceListening={isVoiceListening}
+          language={settings.language}
+          isLeftHanded={settings.isLeftHanded}
+          primaryInputMethod={settings.primaryInputMethod}
         />
       </div>
     </ThemeProvider>

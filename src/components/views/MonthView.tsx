@@ -9,7 +9,7 @@ interface MonthViewProps {
   onDayClick: (day: Date) => void;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ viewDate, tasks, todayStr, onDayClick }) => {
+const MonthView: React.FC<MonthViewProps> = ({ viewDate, tasks, settings, todayStr, onDayClick }) => {
   const startOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
   const endOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0);
   const startDay = startOfMonth.getDay();
@@ -19,11 +19,22 @@ const MonthView: React.FC<MonthViewProps> = ({ viewDate, tasks, todayStr, onDayC
     return d;
   });
 
+  // Локализованные дни недели через Intl (было: хардкод 'Sun','Mon',…)
+  const locale = settings.language === 'ru' ? 'ru-RU' : settings.language === 'es' ? 'es-ES' : 'en-US';
+  const weekdayLabels = Array.from({ length: 7 }, (_, i) => {
+    const probe = new Date(2024, 0, 7 + i); // 2024-01-07 — воскресенье
+    return probe.toLocaleDateString(locale, { weekday: 'short' });
+  });
+
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-7 gap-1">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-          <div key={d} className="md-typescale-label-small text-center py-2 flow-text-muted">
+        {weekdayLabels.map((d, i) => (
+          <div
+            key={i}
+            className="md-typescale-label-small text-center py-2"
+            style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
+          >
             {d}
           </div>
         ))}
@@ -42,12 +53,14 @@ const MonthView: React.FC<MonthViewProps> = ({ viewDate, tasks, todayStr, onDayC
               type="button"
               key={dStr}
               onClick={() => onDayClick(day)}
-              className="aspect-square glass-2 p-1 flex flex-col items-center justify-between transition-all cursor-pointer md-state-layer"
+              className="aspect-square p-1 flex flex-col items-center justify-between transition-all cursor-pointer md-state-layer"
               style={{
                 borderRadius: 'var(--md-sys-shape-corner-medium)',
-                background: isToday ? 'var(--md-sys-color-primary-container)' : undefined,
+                background: isToday
+                  ? 'var(--md-sys-color-primary-container)'
+                  : 'var(--md-sys-color-surface-container)',
                 color: isToday ? 'var(--md-sys-color-on-primary-container)' : 'var(--md-sys-color-on-surface)',
-                boxShadow: isToday ? 'var(--md-sys-elevation-2)' : undefined,
+                boxShadow: isToday ? 'var(--md-sys-elevation-shadow-2)' : undefined,
               }}
             >
               <span className="md-typescale-label-medium font-bold">{day.getDate()}</span>

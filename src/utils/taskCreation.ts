@@ -1,4 +1,4 @@
-import { Task, TimePeriod, TaskWeight, Language } from '../types';
+import { Task, TimePeriod, TaskWeight, Language, Recurrence } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { adjustTaskPeriods } from '../services/taskOptimizer';
 
@@ -108,4 +108,60 @@ export function resolveTaskPlacement(
 
 export function createTaskId(): string {
   return Math.random().toString(36).slice(2, 11);
+}
+
+/**
+ * Разворачивает рекуррентные задачи на целевую дату.
+ *
+ * Задача с recurrence != 'none' хранится один раз (в дне её создания) и
+ * материализуется в повтор на нужную дату. Источник истины — поле `dueDate`
+ * материнской задачи; результат помечается `recurrenceSourceId`, чтобы
+ * отслеживать, какие инстансы уже были развёрнуты (и не создавать дубли).
+ */
+export function expandRecurringTasks(tasks: Task[], targetDate: string): Task[] {
+  const onTarget = tasks.filter((task) => task.dueDate === targetDate);
+  const generated: Task[] = [];
+
+  for (const task of tasks) {
+    if (!task.recurrence || task.recurrence === 'none' || task.recurrence === 'all-blocks') continue;
+    if (!task.dueDate) continue;
+    if (!matchesRecurrence(task.dueDate, targetDate, task.recurrence)) continue;
+
+    generated.push({
+      ...task,
+      id: `${task.id}__${targetDate}`,
+      dueDate: targetDate,
+      completed: false,
+      createdAt: Date.now(),
+      // сохраняем исходный период, чтобы все инстансы стартовали одинаково
+      originalPeriod: task.originalPeriod,
+    });
+  }
+
+  return [...onTarget, ...generated];
+}
+
+function toUtcDate(iso: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return null;
+  return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+}
+
+function matchesRecurrence(fromIso: string, toIso: string, recurrence: Recurrence): boolean {
+  const from = toUtcDate(fromIso);
+  const to = toUtcDate(toIso);
+  if (!from || !to) return false;
+  if (to.getTime() <= from.getTime()) return false;
+
+  if (recurrence === 'daily') return true;
+
+  if (recurrence === 'weekly') {
+    return to.getUTCDay() === from.getUTCDay();
+  }
+
+  if (recurrence === 'monthly') {
+    return to.getUTCDate() === from.getUTCDate();
+  }
+
+  return false;
 }

@@ -18,8 +18,12 @@ const YearView: React.FC<YearViewProps> = ({ viewDate, tasks, language }) => {
         return (
           <div
             key={m}
-            className="glass-2 p-3 space-y-2"
-            style={{ borderRadius: 'var(--md-sys-shape-corner-large)', padding: '12px' }}
+            className="p-3 space-y-2"
+            style={{
+              borderRadius: 'var(--md-sys-shape-corner-large)',
+              padding: '12px',
+              background: 'var(--md-sys-color-surface-container)',
+            }}
           >
             <span className="md-typescale-label-small block text-center flow-text-muted">
               {monthDate.toLocaleDateString(language, { month: 'long' })}

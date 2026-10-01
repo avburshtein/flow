@@ -29,8 +29,12 @@ const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language
         return (
           <div
             key={dStr}
-            className={`glass-2 p-3 flex gap-3 ${isWeekend ? 'opacity-90' : ''}`}
-            style={{ borderRadius: 'var(--md-sys-shape-corner-large)', padding: '12px 16px' }}
+            className={`p-3 flex gap-3 ${isWeekend ? 'opacity-90' : ''}`}
+            style={{
+              borderRadius: 'var(--md-sys-shape-corner-large)',
+              padding: '12px 16px',
+              background: 'var(--md-sys-color-surface-container)',
+            }}
           >
             <div
               className="w-20 text-center py-2 flex-shrink-0"

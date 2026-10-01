@@ -28,7 +28,7 @@ const AlarmModal: React.FC<AlarmModalProps> = ({
         style={{
           background: 'var(--md-sys-color-surface-container-low)',
           borderRadius: 'var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0',
-          boxShadow: 'var(--md-sys-elevation-5)',
+          boxShadow: 'var(--md-sys-elevation-shadow-3)',
           minWidth: '280px',
           maxWidth: '560px',
           margin: '0 auto',
@@ -170,7 +170,7 @@ const AlarmModal: React.FC<AlarmModalProps> = ({
               minHeight: '48px',
               background: 'var(--md-sys-color-primary)',
               color: 'var(--md-sys-color-on-primary)',
-              boxShadow: 'var(--md-sys-elevation-2)',
+              boxShadow: 'var(--md-sys-elevation-shadow-2)',
             }}
           >
             {t.save}

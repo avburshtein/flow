@@ -8,12 +8,12 @@ import { VoiceSettings } from '../../types';
 // Объявление типов Web Speech API
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-    speechSynthesis: SpeechSynthesis;
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
   }
 }
 
+// Объявление типов Web Speech API
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
@@ -73,7 +73,7 @@ const LANG_MAP: Record<string, string> = {
 
 export class VoiceControlService {
   private recognition: SpeechRecognition | null = null;
-  private synthesis: window['speechSynthesis'] | null = null;
+  private synthesis: SpeechSynthesis | null = null;
   private isListening: boolean = false;
   private isSpeaking: boolean = false;
   private shouldAutoRestart: boolean = false;

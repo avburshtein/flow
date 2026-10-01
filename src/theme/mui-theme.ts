@@ -183,11 +183,11 @@ const baseThemeOptions: Omit<ThemeOptions, 'palette'> = {
         },
         MuiAlert: {
             styleOverrides: {
-                filledSuccess: {
-                    backgroundColor: token('tertiary'),
-                    color: token('on-tertiary'),
+                filled: {
+                    backgroundColor: 'var(--md-sys-color-tertiary-container)',
+                    color: 'var(--md-sys-color-on-tertiary-container)',
                 },
-                filledWarning: {
+                colorWarning: {
                     backgroundColor: 'var(--flow-capacity-overload)',
                     color: token('on-surface'),
                 },

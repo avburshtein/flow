@@ -1,6 +1,7 @@
 import React from 'react';
 import { TimeBlockConfig, TimePeriod, Task, Language } from '../../types.ts';
 import { WEIGHT_CONFIG, BLOCK_CAPACITY } from '../../constants.tsx';
+import { expandRecurringTasks } from '../../utils/taskCreation.ts';
 import TimeBlock from './TimeBlock.tsx';
 
 interface TimeBlockListProps {
@@ -34,12 +35,17 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
   onUpdate,
   onToggleCollapse
 }) => {
+  const dateStr = viewDate.toISOString().split('T')[0];
+
+  // Разворачиваем рекуррентные задачи на отображаемую дату
+  const visibleTasks = expandRecurringTasks(tasks, dateStr);
+
   return (
     <div className={isListView ? 'flex flex-col gap-6' : 'grid grid-cols-2 gap-4'}>
       {blocks.map((block) => {
-        const isActive = activePeriodId === block.id && todayStr === viewDate.toISOString().split('T')[0];
+        const isActive = activePeriodId === block.id && todayStr === dateStr;
         const isNight = block.id === TimePeriod.NIGHT;
-        const blockTasks = tasks.filter(task => task.periods.includes(block.id) && task.dueDate === viewDate.toISOString().split('T')[0]);
+        const blockTasks = visibleTasks.filter(task => task.periods.includes(block.id) && task.dueDate === dateStr);
         const totalPoints = blockTasks.reduce((sum, task) => sum + WEIGHT_CONFIG[task.weight].points, 0);
         const isOverCapacity = !isNight && totalPoints > BLOCK_CAPACITY;
         const capacityPercent = Math.min(100, (totalPoints / BLOCK_CAPACITY) * 100);

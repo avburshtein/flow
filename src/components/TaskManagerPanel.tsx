@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Trash2, CheckCircle, AlertCircle, X } from 'lucide-react';
+import { useButton } from 'react-aria';
+import { Trash2, CheckCircle, ListChecks, X } from 'lucide-react';
 import { Task, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 
@@ -18,6 +19,21 @@ const TaskManagerPanel: React.FC<TaskManagerPanelProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showConfirm, setShowConfirm] = useState<'all' | 'completed' | null>(null);
+  const expandRef = React.useRef<HTMLButtonElement>(null);
+  const collapseRef = React.useRef<HTMLButtonElement>(null);
+  const completedRef = React.useRef<HTMLButtonElement>(null);
+  const allRef = React.useRef<HTMLButtonElement>(null);
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const confirmRef = React.useRef<HTMLButtonElement>(null);
+  const expand = useButton({ onPress: () => setIsExpanded(true) }, expandRef).buttonProps;
+  const collapse = useButton({ onPress: () => setIsExpanded(false) }, collapseRef).buttonProps;
+  const delCompleted = useButton({ onPress: () => setShowConfirm('completed') }, completedRef).buttonProps;
+  const delAll = useButton({ onPress: () => setShowConfirm('all') }, allRef).buttonProps;
+  const cancel = useButton({ onPress: () => setShowConfirm(null) }, cancelRef).buttonProps;
+  const confirm = useButton({ onPress: () => {
+    if (showConfirm === 'all') onDeleteAll(); else onDeleteAllCompleted();
+    setShowConfirm(null); setIsExpanded(false);
+  } }, confirmRef).buttonProps;
 
   const t = TRANSLATIONS[language];
   const stats = {
@@ -29,33 +45,49 @@ const TaskManagerPanel: React.FC<TaskManagerPanelProps> = ({
   if (!isExpanded) {
     return (
       <button
-        onClick={() => setIsExpanded(true)}
-        className="w-full glass-2 p-4 rounded-2xl flex items-center justify-between gap-4 hover-lift transition-all group"
+        type="button"
+        ref={expandRef}
+        {...expand}
+        className="w-full min-h-[52px] flex items-center justify-between gap-4 px-4 py-3 rounded-2xl md-state-layer"
+        style={{
+          background: 'var(--md-sys-color-surface-container)',
+          border: '1px solid var(--md-sys-color-outline-variant)',
+        }}
       >
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{ background: 'var(--md-sys-color-surface-container-high)' }}
           >
-            <AlertCircle size={20} className="flow-text-muted" />
+            <ListChecks size={20} style={{ color: 'var(--md-sys-color-on-surface-variant)' }} />
           </div>
           <div className="text-left">
-            <div className="text-[10px] font-black uppercase flow-text-muted tracking-widest">
-              {t.tasks} / {t.taskManagement}
+            <div
+              className="text-[11px] font-medium uppercase tracking-wide"
+              style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
+            >
+              {t.taskManagement}
             </div>
-            <div className="text-sm font-bold flow-text">
-              {stats.total} {stats.total === 1 ? 'задача' : 'задач'}
+            <div
+              className="text-sm font-semibold"
+              style={{ color: 'var(--md-sys-color-on-surface)' }}
+            >
+              {t.totalTasks}: {stats.total}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="text-right">
-            <div className="text-[10px] font-black uppercase flow-text-muted tracking-widest">
-              {stats.completed} выполнено
-            </div>
-            <div className="text-sm font-bold text-emerald-400">
-              {stats.active} активных
-            </div>
+        <div className="text-right">
+          <div
+            className="text-[11px] font-medium"
+            style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
+          >
+            {t.completed}: {stats.completed}
+          </div>
+          <div
+            className="text-sm font-semibold"
+            style={{ color: 'var(--md-sys-color-primary)' }}
+          >
+            {t.active}: {stats.active}
           </div>
         </div>
       </button>
@@ -63,104 +95,151 @@ const TaskManagerPanel: React.FC<TaskManagerPanelProps> = ({
   }
 
   return (
-    <div className="glass-2 rounded-2xl overflow-hidden">
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: 'var(--md-sys-color-surface-container)',
+        border: '1px solid var(--md-sys-color-outline-variant)',
+      }}
+    >
       {/* Header */}
-      <div className="p-4 border-b flow-divider border-b flex items-center justify-between">
+      <div
+        className="px-4 py-3 flex items-center justify-between"
+        style={{ borderBottom: '1px solid var(--md-sys-color-outline-variant)' }}
+      >
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{ background: 'var(--md-sys-color-surface-container-high)' }}
           >
-            <AlertCircle size={20} className="flow-text-muted" />
+            <ListChecks size={20} style={{ color: 'var(--md-sys-color-on-surface-variant)' }} />
           </div>
-          <div>
-            <div className="text-[10px] font-black uppercase flow-text-muted tracking-widest">
-              {t.tasks} / {t.taskManagement}
-            </div>
-            <div className="text-sm font-bold flow-text">
-              Всего: {stats.total}
-            </div>
+          <div
+            className="text-sm font-semibold"
+            style={{ color: 'var(--md-sys-color-on-surface)' }}
+          >
+            {t.taskManagement}
           </div>
         </div>
         <button
-          onClick={() => setIsExpanded(false)}
-          className="glass-btn w-8 h-8 flex items-center justify-center"
+          type="button"
+          ref={collapseRef}
+          {...collapse}
+          aria-label={t.close}
+          className="w-[52px] h-[52px] flex items-center justify-center rounded-xl md-state-layer"
+          style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
         >
-          <X size={18} />
+          <X size={20} />
         </button>
       </div>
 
       {/* Stats */}
       <div className="px-4 py-3 grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-xl p-3" style={{ background: 'var(--md-sys-color-surface-container-high)' }}>
-          <div className="text-2xl font-bold flow-text">{stats.total}</div>
-          <div className="text-[8px] font-black uppercase flow-text-muted tracking-widest">Всего</div>
-        </div>
-        <div className="rounded-xl p-3" style={{ background: 'var(--md-sys-color-surface-container-high)' }}>
-          <div className="text-2xl font-bold text-emerald-400">{stats.active}</div>
-          <div className="text-[8px] font-black uppercase flow-text-muted tracking-widest">Активных</div>
-        </div>
-        <div className="rounded-xl p-3" style={{ background: 'var(--md-sys-color-surface-container-high)' }}>
-          <div className="text-2xl font-bold flow-text-muted">{stats.completed}</div>
-          <div className="text-[8px] font-black uppercase flow-text-muted tracking-widest">Выполнено</div>
-        </div>
+        {[
+          { value: stats.total, label: t.totalTasks, color: 'var(--md-sys-color-on-surface)' },
+          { value: stats.active, label: t.active, color: 'var(--md-sys-color-primary)' },
+          { value: stats.completed, label: t.completed, color: 'var(--md-sys-color-on-surface-variant)' },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-xl p-3"
+            style={{ background: 'var(--md-sys-color-surface-container-high)' }}
+          >
+            <div className="text-2xl font-semibold" style={{ color: stat.color }}>
+              {stat.value}
+            </div>
+            <div
+              className="text-[11px] font-medium uppercase tracking-wide"
+              style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
+            >
+              {stat.label}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Actions */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 flex flex-col gap-2">
         {stats.completed > 0 && (
           <button
-            onClick={() => setShowConfirm('completed')}
-            className="w-full py-3 px-4 rounded-xl flow-text-muted text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
-            style={{ background: 'var(--md-sys-color-surface-container-high)' }}
+            type="button"
+            ref={completedRef}
+            {...delCompleted}
+            className="min-h-[52px] w-full px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-medium"
+            style={{
+              background: 'var(--md-sys-color-surface-container-high)',
+              color: 'var(--md-sys-color-on-surface-variant)',
+            }}
           >
-            <CheckCircle size={16} />
-            Удалить выполненные ({stats.completed})
+            <CheckCircle size={18} />
+            {t.deleteCompleted} ({stats.completed})
           </button>
         )}
 
         <button
-          onClick={() => setShowConfirm('all')}
-          className="w-full py-3 px-4 rounded-xl bg-rose-500/10 text-rose-400 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/20 transition-all flex items-center justify-center gap-2"
+          type="button"
+          ref={allRef}
+          {...delAll}
+          className="min-h-[52px] w-full px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-medium"
+          style={{
+            background: 'var(--md-sys-color-error-container)',
+            color: 'var(--md-sys-color-on-error-container)',
+          }}
         >
-          <Trash2 size={16} />
-          Удалить все задачи ({stats.total})
+          <Trash2 size={18} />
+          {t.deleteAll} ({stats.total})
         </button>
       </div>
 
       {/* Confirmation Modal */}
       {showConfirm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-          <div className="glass-2 rounded-2xl p-6 max-w-sm w-full animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-bold flow-text mb-2">
-              {showConfirm === 'all' ? 'Удалить все задачи?' : 'Удалить выполненные задачи?'}
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgb(var(--md-sys-color-scrim-rgb) / 0.6)' }}
+        >
+          <div
+            className="rounded-3xl p-6 max-w-sm w-full animate-in fade-in zoom-in duration-200"
+            style={{
+              background: 'var(--md-sys-color-surface-container-high)',
+              boxShadow: 'var(--md-sys-elevation-shadow-3)',
+            }}
+          >
+            <h3
+              className="text-lg font-semibold mb-2"
+              style={{ color: 'var(--md-sys-color-on-surface)' }}
+            >
+              {showConfirm === 'all' ? t.confirmDeleteAll : t.confirmDeleteCompleted}
             </h3>
-            <p className="text-sm flow-text-muted mb-6">
-              {showConfirm === 'all'
-                ? 'Это действие удалит все задачи без возможности восстановления.'
-                : `Это действие удалит ${stats.completed} выполненн${stats.completed === 1 ? 'ую' : 'ые'} задачи.`}
+            <p
+              className="text-sm mb-6"
+              style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
+            >
+              {showConfirm === 'all' ? t.deleteAllWarning : t.deleteCompletedWarning}
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => setShowConfirm(null)}
-                className="flex-1 py-3 rounded-xl flow-text-muted text-[10px] font-black uppercase tracking-widest transition-all"
-                style={{ background: 'var(--md-sys-color-surface-container-high)' }}
+                type="button"
+                ref={cancelRef}
+                {...cancel}
+                className="flex-1 min-h-[52px] rounded-xl text-sm font-medium"
+                style={{
+                  background: 'var(--md-sys-color-surface-container-highest)',
+                  color: 'var(--md-sys-color-on-surface)',
+                }}
               >
-                Отмена
+                {t.cancel}
               </button>
               <button
-                onClick={() => {
-                  if (showConfirm === 'all') {
-                    onDeleteAll();
-                  } else {
-                    onDeleteAllCompleted();
-                  }
-                  setShowConfirm(null);
-                  setIsExpanded(false);
+                type="button"
+                ref={confirmRef}
+                {...confirm}
+                className="flex-1 min-h-[52px] rounded-xl text-sm font-medium"
+                style={{
+                  background: 'var(--md-sys-color-error-container)',
+                  color: 'var(--md-sys-color-on-error-container)',
                 }}
-                className="flex-1 py-3 rounded-xl bg-rose-500 flow-text text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all"
               >
-                Удалить
+                {t.delete}
               </button>
             </div>
           </div>

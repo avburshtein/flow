@@ -19,6 +19,8 @@ export type Recurrence = 'none' | 'daily' | 'weekly' | 'monthly' | 'all-blocks';
 
 export type OptimizationStrategy = 'balanced' | 'quick-wins' | 'priority-first';
 
+export type PrimaryInputMethod = 'voice' | 'text';
+
 export interface AlarmConfig {
   enabled: boolean;
   time: string; // HH:mm
@@ -32,6 +34,10 @@ export interface UserSettings {
   workHistory: string[]; // List of YYYY-MM-DD strings where tasks were completed
   language: Language;
   alarm: AlarmConfig;
+  /** Thumb-driven layout: зеркалит DateNavigator и FlowToolbar */
+  isLeftHanded?: boolean;
+  /** Определяет иконку центральной FAB в тулбаре */
+  primaryInputMethod?: PrimaryInputMethod;
 }
 
 export interface Task {

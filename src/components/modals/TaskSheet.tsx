@@ -349,12 +349,14 @@ export default function TaskSheet({
                     onClose={() => setRecurrenceAnchor(null)}
                     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    PaperProps={{
-                        sx: {
-                            bgcolor: 'var(--md-sys-color-surface-container-high)',
-                            borderRadius: '16px',
-                            boxShadow: 'var(--md-sys-elevation-shadow-2)',
-                            minWidth: '200px',
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                bgcolor: 'var(--md-sys-color-surface-container-high)',
+                                borderRadius: '16px',
+                                boxShadow: 'var(--md-sys-elevation-shadow-2)',
+                                minWidth: '200px',
+                            },
                         },
                     }}
                 >

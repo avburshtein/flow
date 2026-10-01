@@ -1151,6 +1151,37 @@ html {
 }
 
 /* ─────────────────────────────────────────
+   KEYFRAMES
+───────────────────────────────────────── */
+@keyframes sheet-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes block-appear {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.88; }
+}
+
+/* ─────────────────────────────────────────
+   FOCUS RING — only visible for keyboard navigation (:focus-visible)
+───────────────────────────────────────── */
+.md-focus-ring:focus {
+  outline: none;
+}
+
+.md-focus-ring:focus-visible {
+  outline: 3px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--md-sys-shape-corner-medium);
+}
+
+/* ─────────────────────────────────────────
    LEGACY ELEVATION (box-shadow values)
    Used in existing components — keep until migrated to tint-based elevation
 ───────────────────────────────────────── */

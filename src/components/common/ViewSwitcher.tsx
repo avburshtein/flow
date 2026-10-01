@@ -32,41 +32,48 @@ const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ viewMode, onModeChange, lan
       aria-label="View mode"
       sx={{
         display: 'flex',
+        width: '100%',
         backgroundColor: 'transparent',
-        borderRadius: '9999px', // ← Pill shape
+        // Figma: Segmented button 358x52, обводка outline на всём контроле
         border: '1px solid var(--md-sys-color-outline)',
+        borderRadius: 'var(--md-sys-shape-corner-full)',
         overflow: 'hidden',
         '& .MuiToggleButtonGroup-grouped': {
           border: 'none',
           borderRadius: '0 !important',
           margin: 0,
           flex: 1,
-          minHeight: '40px',
-          padding: '0 16px',
-          gap: '6px',
+          // Figma: container 90x44 внутри сегмента 90x52
+          minHeight: '52px',
+          padding: '4px 12px',
+          gap: '8px',
           color: 'var(--md-sys-color-on-surface)',
           textTransform: 'none',
-          fontSize: '14px',
+          fontSize: 'var(--md-sys-typescale-label-large-size)',
           fontWeight: 500,
+          letterSpacing: '0.1px',
           backgroundColor: 'transparent',
           '&:not(:last-of-type)': {
             borderRight: '1px solid var(--md-sys-color-outline)',
           },
           '&:first-of-type': {
-            borderRadius: '9999px 0 0 9999px !important', // ← Левый край pill
+            borderTopLeftRadius: 'var(--md-sys-shape-corner-full)',
+            borderBottomLeftRadius: 'var(--md-sys-shape-corner-full)',
           },
           '&:last-of-type': {
-            borderRadius: '0 9999px 9999px 0 !important', // ← Правый край pill
+            borderTopRightRadius: 'var(--md-sys-shape-corner-full)',
+            borderBottomRightRadius: 'var(--md-sys-shape-corner-full)',
           },
+          // Figma: selected segment fill #E9DDFF, label #4D3D75
           '&.Mui-selected': {
             backgroundColor: 'var(--md-sys-color-secondary-container)',
             color: 'var(--md-sys-color-on-secondary-container)',
+            '&:hover': {
+              backgroundColor: 'var(--md-sys-color-secondary-container)',
+            },
           },
           '&:hover': {
             backgroundColor: 'var(--md-sys-color-surface-container)',
-          },
-          '&.Mui-selected:hover': {
-            backgroundColor: 'var(--md-sys-color-secondary-container)',
           },
         },
       }}
@@ -75,8 +82,9 @@ const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ viewMode, onModeChange, lan
         <ToggleButton
           key={mode}
           value={mode}
+          aria-label={t[mode]}
         >
-          {mode === viewMode && <Check size={18} />}
+          {mode === viewMode && <Check size={18} strokeWidth={2} />}
           <span>{t[mode]}</span>
         </ToggleButton>
       ))}

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useButton } from 'react-aria';
 import { ChevronLeft, ChevronRight, RotateCw } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants.tsx';
 
@@ -7,6 +8,7 @@ interface DateNavigatorProps {
   viewMode: 'day' | 'week' | 'month' | 'year';
   todayStr: string;
   language: keyof typeof TRANSLATIONS;
+  isLeftHanded?: boolean;
   onNavigate: (direction: number) => void;
   onToday: () => void;
 }
@@ -16,19 +18,37 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
   viewMode,
   todayStr,
   language,
+  isLeftHanded = false,
   onNavigate,
   onToday,
 }) => {
-  const t = TRANSLATIONS[language];
+  const { buttonProps: prevProps } = useButton(
+    { onPress: () => onNavigate(-1), 'aria-label': TRANSLATIONS[language].prev },
+    useRef<HTMLButtonElement>(null)
+  );
+  const { buttonProps: nextProps } = useButton(
+    { onPress: () => onNavigate(1), 'aria-label': TRANSLATIONS[language].next },
+    useRef<HTMLButtonElement>(null)
+  );
+  const { buttonProps: todayProps } = useButton(
+    { onPress: onToday, 'aria-label': TRANSLATIONS[language].today },
+    useRef<HTMLButtonElement>(null)
+  );
 
+  const isToday = todayStr === viewDate.toISOString().split('T')[0];
+
+  // Figma: центрированный заголовок 16px / fw 600 — напр. "Today's Flow, Monday 22"
   const getTitle = () => {
     switch (viewMode) {
-      case 'day':
-        return todayStr === viewDate.toISOString().split('T')[0]
-          ? t.today
-          : viewDate.toLocaleDateString(language, { day: 'numeric', month: 'long' });
+      case 'day': {
+        const day = viewDate.toLocaleDateString(language, {
+          day: 'numeric',
+          month: 'long',
+        });
+        return isToday ? `${TRANSLATIONS[language].todaysFlow}, ${day}` : day;
+      }
       case 'week':
-        return `Week ${Math.ceil(viewDate.getDate() / 7)}`;
+        return viewDate.toLocaleDateString(language, { month: 'long', year: 'numeric' });
       case 'month':
         return viewDate.toLocaleDateString(language, { month: 'long', year: 'numeric' });
       case 'year':
@@ -40,38 +60,112 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
     if (viewMode === 'day') {
       return viewDate.toLocaleDateString(language, { weekday: 'long' });
     }
-    return t.upcoming;
+    return TRANSLATIONS[language].upcoming;
   };
 
-  const btnStyle: React.CSSProperties = {
-    borderRadius: 'var(--md-sys-shape-corner-medium)',
-    background: 'var(--md-sys-color-surface-container-high)',
-    color: 'var(--md-sys-color-on-surface)',
-    minWidth: '40px',
-    minHeight: '40px',
+  const navButtonStyle: React.CSSProperties = {
+    color: 'var(--md-sys-color-on-surface-variant)',
+    transition: 'color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard)',
   };
 
+  const chevronBtn = (
+    <button
+      type="button"
+      className="flex items-center justify-center w-11 h-11 md-state-layer md-focus-ring"
+      style={navButtonStyle}
+      {...prevProps}
+    >
+      <ChevronLeft size={24} strokeWidth={2} />
+    </button>
+  );
+
+  const chevronNext = (
+    <button
+      type="button"
+      className="flex items-center justify-center w-11 h-11 md-state-layer md-focus-ring"
+      style={navButtonStyle}
+      {...nextProps}
+    >
+      <ChevronRight size={24} strokeWidth={2} />
+    </button>
+  );
+
+  const todayBtn = (
+    <button
+      type="button"
+      className="flex items-center justify-center w-11 h-11 md-state-layer md-focus-ring"
+      style={navButtonStyle}
+      {...todayProps}
+    >
+      <RotateCw size={20} strokeWidth={2} />
+    </button>
+  );
+
+  // Figma: ‹ [заголовок по центру] › — 390x44
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="flex flex-col">
-        <h2 className="md-typescale-title-large" style={{ color: 'var(--md-sys-color-on-surface)' }}>
-          {getTitle()}
-        </h2>
-        <span className="md-typescale-label-medium" style={{ color: 'var(--md-sys-color-on-surface-variant)' }}>
-          {getSubtitle()}
-        </span>
-      </div>
-      <div className="flex gap-1">
-        <button type="button" onClick={() => onNavigate(-1)} className="md-state-layer md-focus-ring flex items-center justify-center w-10 h-10 transition-all" style={btnStyle}>
-          <ChevronLeft size={22} />
-        </button>
-        <button type="button" onClick={onToday} className="md-state-layer md-focus-ring flex items-center justify-center w-10 h-10 transition-all" style={btnStyle}>
-          <RotateCw size={22} />
-        </button>
-        <button type="button" onClick={() => onNavigate(1)} className="md-state-layer md-focus-ring flex items-center justify-center w-10 h-10 transition-all" style={btnStyle}>
-          <ChevronRight size={22} />
-        </button>
-      </div>
+    <div
+      className="flex items-center justify-between h-11 px-2"
+      style={{ minHeight: '44px' }}
+    >
+      {isLeftHanded ? (
+        <>
+          {todayBtn}
+          <div className="flex items-center gap-1">
+            {chevronBtn}
+            {chevronNext}
+          </div>
+          <div className="flex-1 text-right">
+            <h2
+              className="font-semibold"
+              style={{
+                color: 'var(--md-sys-color-on-surface-variant)',
+                fontSize: 'var(--md-sys-typescale-title-medium-size)',
+                lineHeight: 'var(--md-sys-typescale-title-medium-line-height)',
+              }}
+            >
+              {getTitle()}
+            </h2>
+            <span
+              style={{
+                color: 'var(--md-sys-color-on-surface-variant)',
+                opacity: 0.7,
+                fontSize: 'var(--md-sys-typescale-label-small-size)',
+              }}
+            >
+              {getSubtitle()}
+            </span>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="flex-1 text-left">
+            <h2
+              className="font-semibold"
+              style={{
+                color: 'var(--md-sys-color-on-surface-variant)',
+                fontSize: 'var(--md-sys-typescale-title-medium-size)',
+                lineHeight: 'var(--md-sys-typescale-title-medium-line-height)',
+              }}
+            >
+              {getTitle()}
+            </h2>
+            <span
+              style={{
+                color: 'var(--md-sys-color-on-surface-variant)',
+                opacity: 0.7,
+                fontSize: 'var(--md-sys-typescale-label-small-size)',
+              }}
+            >
+              {getSubtitle()}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            {chevronBtn}
+            {todayBtn}
+            {chevronNext}
+          </div>
+        </>
+      )}
     </div>
   );
 };

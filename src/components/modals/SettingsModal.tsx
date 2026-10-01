@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Mic, AlertTriangle, Trash2 } from 'lucide-react';
-import { UserSettings, AlarmConfig, Language, VoiceSettings } from '../../types.ts';
+import { UserSettings, AlarmConfig, Language, VoiceSettings, PrimaryInputMethod } from '../../types.ts';
 import { TRANSLATIONS, VOICE_TRANSLATIONS } from '../../constants.tsx';
 import { Button } from '@mui/material';
 
@@ -17,6 +17,8 @@ interface SettingsModalProps {
   tempRest: string;
   tempLang: Language;
   tempAlarm: AlarmConfig;
+  tempLeftHanded: boolean;
+  tempInputMethod: PrimaryInputMethod;
   isDirty: boolean;
   error: string | null;
   voiceSettings?: VoiceSettings;
@@ -26,6 +28,8 @@ interface SettingsModalProps {
   onTempWakeChange: (value: string) => void;
   onTempRestChange: (value: string) => void;
   onTempLangChange: (lang: Language) => void;
+  onTempLeftHandedChange: (value: boolean) => void;
+  onTempInputMethodChange: (value: PrimaryInputMethod) => void;
   onVoiceSettingsChange?: (settings: VoiceSettings) => void;
 }
 
@@ -35,6 +39,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   tempRest,
   tempLang,
   tempAlarm,
+  tempLeftHanded,
+  tempInputMethod,
   isDirty,
   error,
   voiceSettings,
@@ -44,6 +50,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onTempWakeChange,
   onTempRestChange,
   onTempLangChange,
+  onTempLeftHandedChange,
+  onTempInputMethodChange,
   onVoiceSettingsChange
 }) => {
   const t = TRANSLATIONS[settings.language];
@@ -93,7 +101,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         style={{
           background: 'var(--md-sys-color-surface-container-low)',
           borderRadius: 'var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0',
-          boxShadow: 'var(--md-sys-elevation-5)',
+          boxShadow: 'var(--md-sys-elevation-shadow-3)',
         }}
       >
         <div
@@ -170,6 +178,69 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               ))}
             </div>
           </div>
+
+          {/* Method Selection — Figma: Method Selection Dialog */}
+          <div className="space-y-2">
+            <label className="flow-label">{t.primaryInputMethod}</label>
+            <div className="grid grid-cols-2 gap-2">
+              {(['text', 'voice'] as PrimaryInputMethod[]).map(m => (
+                <button
+                  key={m}
+                  type="button"
+                  aria-pressed={tempInputMethod === m}
+                  onClick={() => onTempInputMethodChange(m)}
+                  className={`flow-chip ${tempInputMethod === m ? 'flow-chip--selected' : ''}`}
+                >
+                  {m === 'text' ? t.inputText : t.inputVoice}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Left-handed mode — thumb-driven layout */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={tempLeftHanded}
+            onClick={() => onTempLeftHandedChange(!tempLeftHanded)}
+            className="w-full flex items-center justify-between gap-4 rounded-xl px-4 md-state-layer"
+            style={{
+              minHeight: '52px',
+              background: 'var(--md-sys-color-surface-container)',
+            }}
+          >
+            <span
+              className="text-sm font-medium text-left"
+              style={{ color: 'var(--md-sys-color-on-surface)' }}
+            >
+              {t.leftHanded}
+            </span>
+            <span
+              className="relative shrink-0 inline-flex items-center"
+              style={{
+                width: 52,
+                height: 32,
+                borderRadius: 'var(--md-sys-shape-corner-full)',
+                background: tempLeftHanded
+                  ? 'var(--md-sys-color-primary)'
+                  : 'var(--md-sys-color-surface-container-highest)',
+                transition: 'background var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard)',
+              }}
+            >
+              <span
+                className="absolute block"
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 'var(--md-sys-shape-corner-full)',
+                  background: 'var(--md-sys-color-on-primary)',
+                  left: tempLeftHanded ? 24 : 4,
+                  top: 4,
+                  transition: 'left var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decel)',
+                }}
+              />
+            </span>
+          </button>
 
           {/* Voice Control Section */}
           {voiceSettings && onVoiceSettingsChange && (
