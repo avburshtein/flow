@@ -56,8 +56,11 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
     : borderColor;
 
   return (
+    /* Grid-режим: высоту задаёт .day-grid-fit (ряды 1fr) — блок всегда целым
+       помещается в viewport; max 228px защищает от растягивания на высоких экранах.
+       Vertical-режим: авто-высота от контента, min 228. */
     <section
-      className={`relative p-0 ${viewMode === 'vertical' ? 'min-h-[228px] h-auto' : 'h-[228px]'} flex flex-col overflow-hidden`}
+      className={`relative p-0 ${viewMode === 'vertical' ? 'min-h-[228px] h-auto' : 'h-full max-h-[228px] min-h-0'} flex flex-col overflow-hidden`}
       style={{
         borderRadius: 'var(--md-sys-shape-corner-extra-large)',
         background: containerColor,

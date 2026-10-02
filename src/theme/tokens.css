@@ -1340,3 +1340,12 @@ html {
     border: 1px solid ButtonText;
   }
 }
+
+/* Day View grid: блоки делят остаток viewport (2 ряда по 1fr).
+   370px = pt 24 + header 114 + 20 + switcher 44 + 20 + navigator 44 + 12 + тулбар 88 + гап 4.
+   На высоких экранах ряды упираются в 228px (h в TimeBlock), на низких — сжимаются,
+   чтобы весь день помещался над тулбаром без скролла. */
+.day-grid-fit {
+  height: calc(100vh - 370px);
+  height: calc(100dvh - 370px);
+}

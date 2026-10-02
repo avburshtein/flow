@@ -50,8 +50,17 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
 
   return (
     <div
-      className={isListView ? 'flex flex-col gap-6' : 'grid grid-cols-2'}
-      style={isListView ? undefined : { columnGap: '8px', rowGap: '12px' }}
+      className={isListView ? 'flex flex-col gap-6' : 'grid grid-cols-2 day-grid-fit'}
+      style={
+        isListView
+          ? undefined
+          : {
+              columnGap: '8px',
+              rowGap: '12px',
+              // Ряды делят доступную высоту поровну (viewport минус шапка и тулбар)
+              gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
+            }
+      }
     >
       {blocks.map((block) => {
         const isActive = activePeriodId === block.id && todayStr === dateStr;
