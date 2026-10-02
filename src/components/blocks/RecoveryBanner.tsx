@@ -1,51 +1,59 @@
 import React from 'react';
-import { Moon, Sparkles } from 'lucide-react';
-import { RECOVERY_TIPS } from '../../constants.tsx';
+import { TRANSLATIONS } from '../../constants.tsx';
 
 interface RecoveryBannerProps {
   isWindDown: boolean;
   currentTime: Date;
   language: 'en' | 'ru' | 'es';
+  /** День без задач — показываем инвайт «день свободен» вместо recovery-текста */
+  isEmptyDay?: boolean;
+  onAddTask?: () => void;
 }
 
-const RecoveryBanner: React.FC<RecoveryBannerProps> = ({ isWindDown, currentTime, language }) => {
-  const tipIndex = Math.floor(currentTime.getHours() / 5) % 5;
-  const tip = RECOVERY_TIPS[language][tipIndex];
+/**
+ * Компактный баннер по Figma (ноды 786-22114 и 591-19197):
+ * 358x51, r=12, pad 10/16, одна строка fs12/500 ls0.5.
+ * - Пустой день: без заливки, обводка #D8BAFB, текст #7B757F (инвайт добавить задачу)
+ * - Recovery: fill #EADDFF@25, обводка primary (#6C2EB5), текст on-surface-variant
+ * Большой баннер с цитатой из старого макета заменён на эту полоску —
+ * она почти не сдвигает контент (51px вместо ~350px).
+ */
+const RecoveryBanner: React.FC<RecoveryBannerProps> = ({ isWindDown, language, isEmptyDay = false, onAddTask }) => {
+  const t = TRANSLATIONS[language];
 
   return (
-    <div
-      className="p-6 flex items-center gap-5 transition-all duration-[2000ms]"
+    <button
+      type="button"
+      onClick={onAddTask}
+      disabled={!isEmptyDay}
+      className="w-full flex items-center text-left md-state-layer md-focus-ring"
       style={{
-        borderRadius: 'var(--md-sys-shape-corner-extra-large)',
-        background: isWindDown ? 'var(--flow-block-evening-container)' : 'var(--flow-weight-quick-container)',
-        border: `1px solid ${isWindDown ? 'var(--flow-block-evening)' : 'var(--flow-weight-quick)'}`,
+        minHeight: '51px',
+        padding: '10px 16px',
+        gap: '8px',
+        borderRadius: 'var(--md-sys-shape-corner-large)',
+        border: `1px solid ${isEmptyDay ? 'var(--flow-week-leading-fg)' : 'var(--md-sys-color-primary)'}`,
+        background: isEmptyDay
+          ? 'transparent'
+          : 'color-mix(in srgb, var(--md-sys-color-secondary-container) 25%, transparent)',
+        cursor: isEmptyDay ? 'pointer' : 'default',
       }}
     >
-      <div
-        className="w-14 h-14 flex items-center justify-center"
+      <span
+        className="truncate"
         style={{
-          borderRadius: 'var(--md-sys-shape-corner-large)',
-          background: isWindDown ? 'var(--flow-block-evening)' : 'var(--flow-weight-quick)',
-          color: '#ffffff',
+          fontSize: 12,
+          fontWeight: 500,
+          lineHeight: '16px',
+          letterSpacing: '0.5px',
+          color: isEmptyDay
+            ? 'var(--md-sys-color-outline)'
+            : 'var(--md-sys-color-on-surface-variant)',
         }}
       >
-        {isWindDown ? <Moon size={22} /> : <Sparkles size={22} />}
-      </div>
-      <div className="flex-1">
-        <h3
-          className="md-typescale-title-medium mb-1"
-          style={{ color: isWindDown ? 'var(--flow-block-evening-on-container)' : 'var(--flow-weight-quick-on-container)' }}
-        >
-          {isWindDown ? 'Good Night' : 'Neural Recovery Active'}
-        </h3>
-        <p
-          className="md-typescale-body-medium italic leading-relaxed"
-          style={{ color: isWindDown ? 'var(--flow-block-evening-on-container)' : 'var(--flow-weight-quick-on-container)' }}
-        >
-          &ldquo;{tip}&rdquo;
-        </p>
-      </div>
-    </div>
+        {isEmptyDay ? t.dayWideOpen : t.recoveryCapacityReduced}
+      </span>
+    </button>
   );
 };
 
