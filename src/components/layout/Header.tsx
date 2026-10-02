@@ -86,7 +86,9 @@ const Header: React.FC<HeaderProps> = ({
   // Скриншот: кнопки в правой колонке — view-тоггл (круг) слева, листик (r=12) справа;
   // кольцо прогресса 52x52 под ними, gap 10. Колонка прижата к правому краю.
   return (
-    <header className="flex items-start self-stretch px-4 pb-1 gap-[10px]">
+    /* Контейнер App уже даёт px-4 — кнопки и кольцо на 16px от правого края экрана,
+       на одной вертикали с краем Selected button (у него тот же 16px отступ). */
+    <header className="flex items-start self-stretch pb-1 gap-[10px]">
       <div className="flex flex-col flex-1 min-w-0">
         <h1
           className="m-0 font-semibold"
