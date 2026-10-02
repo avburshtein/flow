@@ -15,6 +15,8 @@ interface TimeBlockProps {
   /** Ёмкость блока: 12 обычно, 10 в Recovery Mode (Figma: «3/10 pts») */
   capacity: number;
   isOverCapacity: boolean;
+  /** Recovery Mode: блоки ниже (196px) и менее насыщенные */
+  isRecoveryMode?: boolean;
   onQuickAdd: () => void;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
@@ -32,6 +34,7 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
   totalPoints,
   capacity,
   isOverCapacity,
+  isRecoveryMode = false,
   onQuickAdd,
   onToggle,
   onDelete,
@@ -46,14 +49,27 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
   const seedColor = `var(--flow-block-${periodId}-seed)`;
   const borderColor = `var(--flow-block-${periodId}-border)`;
 
-  // Figma: активный блок — янтарное свечение + нейтральный бордер;
-  // обычный — elevation-1. В тёмной теме shadow: none, периметр держит border.
-  const blockShadow = isActive
-    ? 'var(--flow-block-shadow-active)'
-    : 'var(--flow-block-shadow)';
-  const blockBorder = isActive
-    ? 'var(--flow-block-active-border)'
-    : borderColor;
+  // Figma-логика:
+  // - Активный (текущий по времени) блок — приподнят (elevation-2), свечение НЕ трогаем
+  // - Переполненный — янтарное свечение #FCD34D (единственный случай свечения)
+  // - Recovery — блок ниже по высоте и менее насыщенный (физически меньше ёмкость)
+  const isOverloaded = isOverCapacity;
+  const blockShadow = isOverloaded
+    ? 'var(--flow-block-shadow-overload)'
+    : isActive
+      ? 'var(--flow-block-shadow-active)'
+      : 'var(--flow-block-shadow)';
+  const blockBorder = isOverloaded
+    ? 'var(--flow-block-overload-border)'
+    : isActive
+      ? 'var(--flow-block-active-border)'
+      : borderColor;
+
+  // Recovery: сама ёмкость меньше (12→10), блок ниже и «нежнее» по цвету
+  const recoveryHeightCap = isRecoveryMode ? '196px' : undefined;
+  const recoveryDesat = isRecoveryMode
+    ? 'color-mix(in srgb, var(--md-sys-color-surface) 20%, transparent)'
+    : undefined;
 
   return (
     /* Grid-режим: высоту задаёт .day-grid-fit (ряды 1fr) — блок всегда целым
@@ -63,9 +79,12 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
       className={`relative p-0 ${viewMode === 'vertical' ? 'min-h-[228px] h-auto' : 'h-full max-h-[228px] min-h-0'} flex flex-col overflow-hidden`}
       style={{
         borderRadius: 'var(--md-sys-shape-corner-extra-large)',
-        background: containerColor,
+        background: recoveryDesat
+          ? `color-mix(in srgb, ${containerColor} 80%, var(--md-sys-color-surface))`
+          : containerColor,
         border: `1px solid ${blockBorder}`,
         boxShadow: blockShadow,
+        maxHeight: recoveryHeightCap,
         animation: `block-appear 250ms var(--md-sys-motion-easing-emphasized-decel) both`,
       } as React.CSSProperties}
     >
@@ -178,15 +197,15 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
             </div>
           )
         ) : (
-          /* Figma Empty States: только иконка 48px, op=.5, stroke on-container 2.6 — без текста */
+          /* Figma Empty States: иконка 40x40 в seed-цвете, op 50% — без текста */
           <div
             className="flex items-center justify-center h-full px-4"
-            style={{ opacity: 0.5, color: onContainerColor }}
+            style={{ opacity: 0.5, color: seedColor }}
           >
             <span className="sr-only">{t.noTasksScheduled}</span>
-            {block.id === TimePeriod.MORNING && getIcon('sunrise', 'w-12 h-12')}
-            {block.id === TimePeriod.AFTERNOON && getIcon('sun', 'w-12 h-12')}
-            {block.id === TimePeriod.EVENING && getIcon('sunset', 'w-12 h-12')}
+            {block.id === TimePeriod.MORNING && getIcon('sunrise', 'w-10 h-10')}
+            {block.id === TimePeriod.AFTERNOON && getIcon('sun', 'w-10 h-10')}
+            {block.id === TimePeriod.EVENING && getIcon('sunset', 'w-10 h-10')}
           </div>
         )}
       </div>

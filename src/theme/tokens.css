@@ -350,12 +350,16 @@
   /* Block elevation — Figma: DROP@0,1 r=3 a=.15 + DROP@0,1 r=2 a=.30 (light only).
      Dark theme uses border instead (см. переопределение в .dark). */
   --flow-block-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.30);
-  /* Active block: amber glow #FCD34D @ 0,0 r=10 a=.45 + r=20 a=.15 */
+  /* Активный (текущий по времени) блок — приподнят над поверхностью (elevation-2),
+     свечение НЕ используем: янтарное зарезервировано под перегрузку. */
+  --flow-block-shadow-active: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 2px 6px 1px rgba(0, 0, 0, 0.18);
+  --flow-block-active-border: #DFD8E0;
+  /* Переполненный блок — янтарное свечение #FCD34D (единственный случай) */
   --flow-capacity-overload: #FCD34D;
-  --flow-block-shadow-active:
+  --flow-block-shadow-overload:
     0 0 10px color-mix(in srgb, var(--flow-capacity-overload) 45%, transparent),
     0 0 20px color-mix(in srgb, var(--flow-capacity-overload) 15%, transparent);
-  --flow-block-active-border: #DFD8E0;
+  --flow-block-overload-border: color-mix(in srgb, var(--flow-capacity-overload) 55%, transparent);
 
   --flow-block-text: #1D1A20;
 }
@@ -555,8 +559,12 @@
   /* Dark theme: NO elevation — периметр задаёт border (--flow-block-*-border выше).
      См. .clinerules: «в светлой элевейшн, в тёмной бордер». */
   --flow-block-shadow: none;
+  /* Активный блок в тёмной — чуть светлее бордер (приподнимаем визуально) */
   --flow-block-shadow-active: none;
-  --flow-block-active-border: color-mix(in srgb, var(--flow-capacity-overload) 35%, transparent);
+  --flow-block-active-border: color-mix(in srgb, var(--md-sys-color-outline) 60%, transparent);
+  /* Переполненный — янтарный бордер (свет в тёмной теме через периметр) */
+  --flow-block-shadow-overload: none;
+  --flow-block-overload-border: color-mix(in srgb, var(--flow-capacity-overload) 55%, transparent);
 
   --flow-block-text: #FFFFFF;
 }

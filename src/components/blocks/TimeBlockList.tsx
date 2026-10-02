@@ -84,6 +84,7 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
             totalPoints={totalPoints}
             capacity={capacity}
             isOverCapacity={isOverCapacity}
+            isRecoveryMode={isRecoveryMode}
             onQuickAdd={() => onQuickAdd(block.id)}
             onToggle={onToggle}
             onDelete={onDelete}
