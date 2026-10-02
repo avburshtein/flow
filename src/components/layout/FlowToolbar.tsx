@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import IconButton from '@mui/material/IconButton';
-import { Settings, Lightbulb, Mic, Plus, Brain } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants.tsx';
+import { IconSparkles, IconMic, IconGear, IconBulb, IconPlus } from '../ui/figmaIcons.tsx';
 import type { PrimaryInputMethod } from '../../types.ts';
 
 /** Figma: боковые кнопки тулбара 52x52 (touch target по Flow calm standard) */
@@ -19,8 +19,6 @@ interface FlowToolbarProps {
     onSmartPlannerClick: () => void;
     isVoiceListening?: boolean;
     language?: keyof typeof TRANSLATIONS;
-    /** Зеркалит раскладку под левую руку (thumb zone слева) */
-    isLeftHanded?: boolean;
     primaryInputMethod?: PrimaryInputMethod;
 }
 
@@ -32,7 +30,6 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
     onSmartPlannerClick,
     isVoiceListening = false,
     language = 'en',
-    isLeftHanded = false,
     primaryInputMethod = 'text',
 }) => {
     const t = TRANSLATIONS[language];
@@ -66,46 +63,28 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                 transitionTimingFunction: 'var(--md-sys-motion-easing-emphasized-decel)',
             }}
         >
-            {/* Figma: Toolbar 390x64, pad 12/16/12/16, FAB всегда по центру.
-                Левая рука -> thumb zone слева, поэтому порядок боковых действий зеркалится. */}
+                        {/* Figma Toolbar 390x64: pad 12/16/12/16, 5 слотов evenly spaced,
+                FAB строго по центру. Порядок: Planner, Voice, [FAB], Settings, Ideas. */}
             <div className="flex items-center justify-between px-4 py-3 min-h-[56px]">
-                <div className="flex items-center" style={{ gap: '106px' }}>
-                    {isLeftHanded ? (
-                        <>
-                            <IconButton
-                                onClick={onSmartPlannerClick}
-                                aria-label={t.smartPlanner}
-                                sx={SIDE_BTN_SX}
-                            >
-                                <Brain size={24} strokeWidth={2} />
-                            </IconButton>
-                            <IconButton
-                                onClick={onVoiceClick}
-                                aria-label={t.voice}
-                                aria-pressed={isVoiceListening}
-                                sx={{
-                                    ...SIDE_BTN_SX,
-                                    color: isVoiceListening
-                                        ? 'var(--md-sys-color-primary)'
-                                        : 'var(--md-sys-color-on-surface-variant)',
-                                }}
-                            >
-                                <Mic size={24} strokeWidth={2} />
-                            </IconButton>
-                        </>
-                    ) : (
-                        <>
-                            <IconButton onClick={onSettingsClick} aria-label={t.settings} sx={SIDE_BTN_SX}>
-                                <Settings size={24} strokeWidth={2} />
-                            </IconButton>
-                            <IconButton onClick={onIdeasClick} aria-label={t.ideas} sx={SIDE_BTN_SX}>
-                                <Lightbulb size={24} strokeWidth={2} />
-                            </IconButton>
-                        </>
-                    )}
-                </div>
+                <IconButton onClick={onSmartPlannerClick} aria-label={t.smartPlanner} sx={SIDE_BTN_SX}>
+                    <IconSparkles size={20} strokeWidth={1.8} />
+                </IconButton>
 
-                {/* Central Smart FAB — Figma: 56x56, r=12, primary. Иконка зависит от primaryInputMethod. */}
+                <IconButton
+                    onClick={onVoiceClick}
+                    aria-label={t.voice}
+                    aria-pressed={isVoiceListening}
+                    sx={{
+                        ...SIDE_BTN_SX,
+                        color: isVoiceListening
+                            ? 'var(--md-sys-color-primary)'
+                            : 'var(--md-sys-color-on-surface-variant)',
+                    }}
+                >
+                    <IconMic size={20} strokeWidth={2} />
+                </IconButton>
+
+                {/* Central FAB — Figma: 56x56, r=12, primary, белая иконка */}
                 <button
                     type="button"
                     onClick={onAddTaskClick}
@@ -121,41 +100,17 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                     }}
                 >
                     {primaryInputMethod === 'voice'
-                        ? <Mic size={24} strokeWidth={2} />
-                        : <Plus size={24} strokeWidth={2} />}
+                        ? <IconMic size={20} strokeWidth={2} />
+                        : <IconPlus size={20} strokeWidth={2.2} />}
                 </button>
 
-                <div className="flex items-center" style={{ gap: '106px' }}>
-                    {isLeftHanded ? (
-                        <>
-                            <IconButton onClick={onIdeasClick} aria-label={t.ideas} sx={SIDE_BTN_SX}>
-                                <Lightbulb size={24} strokeWidth={2} />
-                            </IconButton>
-                            <IconButton onClick={onSettingsClick} aria-label={t.settings} sx={SIDE_BTN_SX}>
-                                <Settings size={24} strokeWidth={2} />
-                            </IconButton>
-                        </>
-                    ) : (
-                        <>
-                            <IconButton
-                                onClick={onVoiceClick}
-                                aria-label={t.voice}
-                                aria-pressed={isVoiceListening}
-                                sx={{
-                                    ...SIDE_BTN_SX,
-                                    color: isVoiceListening
-                                        ? 'var(--md-sys-color-primary)'
-                                        : 'var(--md-sys-color-on-surface-variant)',
-                                }}
-                            >
-                                <Mic size={24} strokeWidth={2} />
-                            </IconButton>
-                            <IconButton onClick={onSmartPlannerClick} aria-label={t.smartPlanner} sx={SIDE_BTN_SX}>
-                                <Brain size={24} strokeWidth={2} />
-                            </IconButton>
-                        </>
-                    )}
-                </div>
+                <IconButton onClick={onSettingsClick} aria-label={t.settings} sx={SIDE_BTN_SX}>
+                    <IconGear size={20} strokeWidth={1.8} />
+                </IconButton>
+
+                <IconButton onClick={onIdeasClick} aria-label={t.ideas} sx={SIDE_BTN_SX}>
+                    <IconBulb size={20} strokeWidth={1.8} />
+                </IconButton>
             </div>
 
             {/* Gesture bar — Figma: 108x4, r=12 */}

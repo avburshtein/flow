@@ -107,6 +107,7 @@ const App: React.FC = () => {
     readStoredJson('flow_voice_settings', { ...DEFAULT_VOICE_SETTINGS, language: settings.language })
   );
   const [isVoiceListening, setIsVoiceListening] = useState(false);
+  const [isRecoveryForced, setIsRecoveryForced] = useState(false);
   const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceConfidence, setVoiceConfidence] = useState<number | undefined>();
@@ -143,9 +144,15 @@ const App: React.FC = () => {
     [settings, currentTime]
   );
   const isRecoveryMode = useMemo(
-    () => getIsRecoveryMode(settings, currentTime, activePeriodId, isWindDown),
-    [settings, currentTime, activePeriodId, isWindDown]
+    () => isRecoveryForced || getIsRecoveryMode(settings, currentTime, activePeriodId, isWindDown),
+    [settings, currentTime, activePeriodId, isWindDown, isRecoveryForced]
   );
+  // Кольцевой индикатор в Header: доля выполненных задач дня (Figma: «50%»)
+  const dayProgress = useMemo(() => {
+    const today = tasks.filter((task) => task.dueDate === todayStr);
+    if (today.length === 0) return 0;
+    return today.filter((task) => task.completed).length / today.length;
+  }, [tasks, todayStr]);
   const dynamicBlocks = useMemo(
     () => getDynamicBlocks(settings, {
       morning: t.morning,
@@ -673,7 +680,7 @@ const App: React.FC = () => {
     <ThemeProvider theme={muiTheme}>
       <CssBaseline />
 
-      <div className="relative mx-auto min-h-screen max-w-lg px-6 py-8">
+      <div className="relative mx-auto min-h-screen max-w-lg px-4 pb-32 pt-6">
         {isAlarmPlaying && (
           <AlarmPlayingModal settings={settings} onStop={stopAlarm} onSnooze={snoozeAlarm} />
         )}
@@ -682,10 +689,11 @@ const App: React.FC = () => {
           currentTime={currentTime}
           user={user}
           language={settings.language}
-          isDarkTheme={isDarkTheme}
+          progress={dayProgress}
           isListView={isListView}
-          onToggleTheme={() => setIsDarkTheme((prev) => !prev)}
+          isRecoveryMode={isRecoveryMode}
           onToggleView={() => setIsListView((prev) => !prev)}
+          onToggleRecovery={() => setIsRecoveryForced((prev) => !prev)}
         />
 
         <VoiceFeedback
@@ -742,7 +750,7 @@ const App: React.FC = () => {
           language={settings.language}
         />
 
-        <div className="mb-6">
+        <div className="pt-4 pb-4">
           <ViewSwitcher
             viewMode={viewMode}
             onModeChange={setViewMode}
@@ -750,7 +758,18 @@ const App: React.FC = () => {
           />
         </div>
 
-        <main className="animate-in fade-in space-y-10 duration-500">
+        {/* Figma: DateNavigator стоит сразу под свитчером, над контентом */}
+        <DateNavigator
+          viewDate={viewDate}
+          viewMode={viewMode}
+          todayStr={todayStr}
+          language={settings.language}
+          isLeftHanded={settings.isLeftHanded}
+          onNavigate={navigateDate}
+          onToday={goToToday}
+        />
+
+        <main className="animate-in fade-in duration-500" style={{ marginTop: '16px' }}>
           {viewMode === 'day' && (
             <DayView
               isRecoveryMode={isRecoveryMode}
@@ -807,21 +826,11 @@ const App: React.FC = () => {
           )}
         </main>
 
-        <div className="relative z-20 mt-6">
-          <DateNavigator
-            viewDate={viewDate}
-            viewMode={viewMode}
-            todayStr={todayStr}
-            language={settings.language}
-            isLeftHanded={settings.isLeftHanded}
-            onNavigate={navigateDate}
-            onToday={goToToday}
-          />
-        </div>
-
         {showSettings && (
           <SettingsModal
             settings={settings}
+            isDarkTheme={isDarkTheme}
+            onToggleTheme={() => setIsDarkTheme((prev) => !prev)}
             tempWake={tempWake}
             tempRest={tempRest}
             tempLang={tempLang}
@@ -851,7 +860,6 @@ const App: React.FC = () => {
           onSmartPlannerClick={() => setShowSmartPlanner(true)}
           isVoiceListening={isVoiceListening}
           language={settings.language}
-          isLeftHanded={settings.isLeftHanded}
           primaryInputMethod={settings.primaryInputMethod}
         />
       </div>

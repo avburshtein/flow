@@ -12,7 +12,8 @@ interface TimeBlockProps {
   isNight: boolean;
   tasks: Task[];
   totalPoints: number;
-  capacityPercent: number;
+  /** Ёмкость блока: 12 обычно, 10 в Recovery Mode (Figma: «3/10 pts») */
+  capacity: number;
   isOverCapacity: boolean;
   onQuickAdd: () => void;
   onToggle: (id: string) => void;
@@ -29,7 +30,7 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
   isNight,
   tasks,
   totalPoints,
-  capacityPercent,
+  capacity,
   isOverCapacity,
   onQuickAdd,
   onToggle,
@@ -43,8 +44,16 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
   const containerColor = `var(--flow-block-${periodId}-container)`;
   const onContainerColor = `var(--flow-block-${periodId}-on-container)`;
   const seedColor = `var(--flow-block-${periodId}-seed)`;
-  const seedOnColor = `var(--flow-block-${periodId}-seed-on)`;
   const borderColor = `var(--flow-block-${periodId}-border)`;
+
+  // Figma: активный блок — янтарное свечение + нейтральный бордер;
+  // обычный — elevation-1. В тёмной теме shadow: none, периметр держит border.
+  const blockShadow = isActive
+    ? 'var(--flow-block-shadow-active)'
+    : 'var(--flow-block-shadow)';
+  const blockBorder = isActive
+    ? 'var(--flow-block-active-border)'
+    : borderColor;
 
   return (
     <section
@@ -52,11 +61,8 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
       style={{
         borderRadius: 'var(--md-sys-shape-corner-extra-large)',
         background: containerColor,
-        // Figma: активный блок получает обводку outline + усиленную тень (elevation-3)
-        border: isActive ? '1px solid var(--md-sys-color-outline)' : '1px solid transparent',
-        boxShadow: isActive
-          ? 'var(--md-sys-elevation-shadow-3)'
-          : 'var(--md-sys-elevation-shadow-1)',
+        border: `1px solid ${blockBorder}`,
+        boxShadow: blockShadow,
         animation: `block-appear 250ms var(--md-sys-motion-easing-emphasized-decel) both`,
       } as React.CSSProperties}
     >
@@ -86,7 +92,7 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
                 lineHeight: 'var(--md-sys-typescale-label-medium-line-height)',
               }}
             >
-              {totalPoints}/{BLOCK_CAPACITY} pts
+              {totalPoints}/{capacity} pts
             </span>
           )}
         </div>
@@ -120,7 +126,7 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
             <div
               className="h-full ease-md-standard"
               style={{
-                width: `${isOverCapacity ? 100 : capacityPercent}%`,
+                width: `${isOverCapacity ? 100 : Math.min(100, (totalPoints / capacity) * 100)}%`,
                 borderRadius: 'var(--md-sys-shape-corner-full)',
                 background: isOverCapacity ? 'var(--flow-capacity-overload)' : seedColor,
                 transition: 'width var(--md-sys-motion-duration-medium-2) var(--md-sys-motion-easing-standard)',
@@ -169,23 +175,15 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
             </div>
           )
         ) : (
-          <div className="flex flex-col items-center justify-center h-full gap-2 px-4">
-            <div style={{ opacity: 0.08 }}>
-              {block.id === TimePeriod.MORNING && getIcon('sunrise', 'w-8 h-8')}
-              {block.id === TimePeriod.AFTERNOON && getIcon('sun', 'w-8 h-8')}
-              {block.id === TimePeriod.EVENING && getIcon('sunset', 'w-8 h-8')}
-            </div>
-            <p
-              className="text-center"
-              style={{
-                color: onContainerColor,
-                opacity: 0.5,
-                fontSize: 'var(--md-sys-typescale-body-medium-size)',
-                lineHeight: 'var(--md-sys-typescale-body-medium-line-height)',
-              }}
-            >
-              {t.noTasksScheduled}
-            </p>
+          /* Figma Empty States: только иконка 48px, op=.5, stroke on-container 2.6 — без текста */
+          <div
+            className="flex items-center justify-center h-full px-4"
+            style={{ opacity: 0.5, color: onContainerColor }}
+          >
+            <span className="sr-only">{t.noTasksScheduled}</span>
+            {block.id === TimePeriod.MORNING && getIcon('sunrise', 'w-12 h-12')}
+            {block.id === TimePeriod.AFTERNOON && getIcon('sun', 'w-12 h-12')}
+            {block.id === TimePeriod.EVENING && getIcon('sunset', 'w-12 h-12')}
           </div>
         )}
       </div>

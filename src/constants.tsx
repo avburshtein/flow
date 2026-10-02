@@ -132,6 +132,9 @@ export const TRANSLATIONS = {
     inputText: 'Text',
     inputVoice: 'Voice',
     leftHanded: 'Left-handed mode',
+    gridView: 'Grid view',
+    listView: 'List view',
+    theme: 'Theme',
     sleepGapError: "Sleep gap must be at least 7 hours."
   },
   ru: {
@@ -222,6 +225,9 @@ export const TRANSLATIONS = {
     inputText: 'Текст',
     inputVoice: 'Голос',
     leftHanded: 'Режим левши',
+    gridView: 'Сетка',
+    listView: 'Список',
+    theme: 'Тема',
     sleepGapError: "Сон должен длиться не менее 7 часов."
   },
   es: {
@@ -312,6 +318,9 @@ export const TRANSLATIONS = {
     inputText: 'Texto',
     inputVoice: 'Voz',
     leftHanded: 'Modo zurdo',
+    gridView: 'Cuadrícula',
+    listView: 'Lista',
+    theme: 'Tema',
     sleepGapError: "El período de sueño debe ser de al menos 7 horas."
   }
 };

@@ -13,6 +13,8 @@ const LANG_MAP: Record<string, string> = {
 
 interface SettingsModalProps {
   settings: UserSettings;
+  isDarkTheme: boolean;
+  onToggleTheme: () => void;
   tempWake: string;
   tempRest: string;
   tempLang: Language;
@@ -35,6 +37,8 @@ interface SettingsModalProps {
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
   settings,
+  isDarkTheme,
+  onToggleTheme,
   tempWake,
   tempRest,
   tempLang,
@@ -178,6 +182,51 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               ))}
             </div>
           </div>
+
+          {/* Theme — перенесено из Header по Figma-структуре */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isDarkTheme}
+            onClick={onToggleTheme}
+            className="w-full flex items-center justify-between gap-4 rounded-xl px-4 md-state-layer"
+            style={{
+              minHeight: '52px',
+              background: 'var(--md-sys-color-surface-container)',
+            }}
+          >
+            <span
+              className="text-sm font-medium text-left"
+              style={{ color: 'var(--md-sys-color-on-surface)' }}
+            >
+              {t.theme}
+            </span>
+            <span
+              className="relative shrink-0 inline-flex items-center"
+              style={{
+                width: 52,
+                height: 32,
+                borderRadius: 'var(--md-sys-shape-corner-full)',
+                background: isDarkTheme
+                  ? 'var(--md-sys-color-primary)'
+                  : 'var(--md-sys-color-surface-container-highest)',
+                transition: 'background var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard)',
+              }}
+            >
+              <span
+                className="absolute block"
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 'var(--md-sys-shape-corner-full)',
+                  background: 'var(--md-sys-color-on-primary)',
+                  left: isDarkTheme ? 24 : 4,
+                  top: 4,
+                  transition: 'left var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decel)',
+                }}
+              />
+            </span>
+          </button>
 
           {/* Method Selection — Figma: Method Selection Dialog */}
           <div className="space-y-2">

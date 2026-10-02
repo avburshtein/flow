@@ -291,7 +291,6 @@
   --flow-block-morning-seed-on: #FFFFFF;
   --flow-block-morning-seed-on-rgb: 255 255 255;
   --flow-block-morning-border: transparent;
-
   /* Afternoon */
   --flow-block-afternoon: #35618E;
   --flow-block-afternoon-rgb: 53 97 142;
@@ -336,6 +335,16 @@
   --flow-block-night-seed-on: #FFFFFF;
   --flow-block-night-seed-on-rgb: 255 255 255;
   --flow-block-night-border: transparent;
+
+  /* Block elevation — Figma: DROP@0,1 r=3 a=.15 + DROP@0,1 r=2 a=.30 (light only).
+     Dark theme uses border instead (см. переопределение в .dark). */
+  --flow-block-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.30);
+  /* Active block: amber glow #FCD34D @ 0,0 r=10 a=.45 + r=20 a=.15 */
+  --flow-capacity-overload: #FCD34D;
+  --flow-block-shadow-active:
+    0 0 10px color-mix(in srgb, var(--flow-capacity-overload) 45%, transparent),
+    0 0 20px color-mix(in srgb, var(--flow-capacity-overload) 15%, transparent);
+  --flow-block-active-border: #DFD8E0;
 
   --flow-block-text: #1D1A20;
 }
@@ -522,6 +531,12 @@
   --flow-block-night-seed-on: #2A2A60;
   --flow-block-night-seed-on-rgb: 42 42 96;
   --flow-block-night-border: color-mix(in srgb, var(--flow-block-night-on-container) 15%, transparent);
+
+  /* Dark theme: NO elevation — периметр задаёт border (--flow-block-*-border выше).
+     См. .clinerules: «в светлой элевейшн, в тёмной бордер». */
+  --flow-block-shadow: none;
+  --flow-block-shadow-active: none;
+  --flow-block-active-border: color-mix(in srgb, var(--flow-capacity-overload) 35%, transparent);
 
   --flow-block-text: #FFFFFF;
 }

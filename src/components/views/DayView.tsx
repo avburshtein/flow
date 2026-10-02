@@ -1,7 +1,6 @@
 import React from 'react';
 import { TimePeriod, Task, Language, TimeBlockConfig } from '../../types.ts';
 import RecoveryBanner from '../blocks/RecoveryBanner.tsx';
-import TaskManagerPanel from '../TaskManagerPanel';
 import TimeBlockList from '../blocks/TimeBlockList.tsx';
 import TaskSheet from '../modals/TaskSheet.tsx';
 
@@ -62,13 +61,7 @@ const DayView: React.FC<DayViewProps> = ({
         />
       )}
 
-      <TaskManagerPanel
-        tasks={tasks}
-        language={language}
-        onDeleteAllCompleted={onDeleteAllCompleted}
-        onDeleteAll={onDeleteAll}
-      />
-
+      {/* Figma: панели Task Manager под свитчером нет — блоки идут сразу */}
       <TimeBlockList
         blocks={dynamicBlocks}
         activePeriodId={activePeriodId}
@@ -77,6 +70,7 @@ const DayView: React.FC<DayViewProps> = ({
         tasks={tasks}
         collapsedBlocks={collapsedBlocks}
         language={language}
+        isRecoveryMode={isRecoveryMode}
         isListView={isListView}
         onQuickAdd={onQuickAdd}
         onToggle={onToggle}

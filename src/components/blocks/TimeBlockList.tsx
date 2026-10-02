@@ -4,6 +4,9 @@ import { WEIGHT_CONFIG, BLOCK_CAPACITY } from '../../constants.tsx';
 import { expandRecurringTasks } from '../../utils/taskCreation.ts';
 import TimeBlock from './TimeBlock.tsx';
 
+/** Figma Recovery Mode: «3/10 pts» — ёмкость снижается с 12 до 10 */
+export const RECOVERY_BLOCK_CAPACITY = 10;
+
 interface TimeBlockListProps {
   blocks: TimeBlockConfig[];
   activePeriodId: TimePeriod;
@@ -12,6 +15,8 @@ interface TimeBlockListProps {
   tasks: Task[];
   collapsedBlocks: Record<string, boolean>;
   language: Language;
+  /** Recovery Mode: ёмкость блока 10 вместо 12 */
+  isRecoveryMode?: boolean;
   isListView: boolean;
   onQuickAdd: (period: TimePeriod) => void;
   onToggle: (id: string) => void;
@@ -28,6 +33,7 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
   tasks,
   collapsedBlocks,
   language,
+  isRecoveryMode = false,
   isListView,
   onQuickAdd,
   onToggle,
@@ -40,18 +46,22 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
   // Разворачиваем рекуррентные задачи на отображаемую дату
   const visibleTasks = expandRecurringTasks(tasks, dateStr);
 
+  const capacity = isRecoveryMode ? RECOVERY_BLOCK_CAPACITY : BLOCK_CAPACITY;
+
   return (
-    <div className={isListView ? 'flex flex-col gap-6' : 'grid grid-cols-2 gap-4'}>
+    <div
+      className={isListView ? 'flex flex-col gap-6' : 'grid grid-cols-2'}
+      style={isListView ? undefined : { columnGap: '12px', rowGap: '28px' }}
+    >
       {blocks.map((block) => {
         const isActive = activePeriodId === block.id && todayStr === dateStr;
         const isNight = block.id === TimePeriod.NIGHT;
         const blockTasks = visibleTasks.filter(task => task.periods.includes(block.id) && task.dueDate === dateStr);
         const totalPoints = blockTasks.reduce((sum, task) => sum + WEIGHT_CONFIG[task.weight].points, 0);
-        const isOverCapacity = !isNight && totalPoints > BLOCK_CAPACITY;
-        const capacityPercent = Math.min(100, (totalPoints / BLOCK_CAPACITY) * 100);
+        const isOverCapacity = !isNight && totalPoints > capacity;
         const blockIndex = blocks.findIndex(b => b.id === block.id);
         const activeIndex = blocks.findIndex(b => b.id === activePeriodId);
-        const isPast = todayStr === viewDate.toISOString().split('T')[0] && blockIndex < activeIndex;
+        const isPast = todayStr === dateStr && blockIndex < activeIndex;
         const isCollapsed = collapsedBlocks[block.id] || false;
 
         return (
@@ -63,7 +73,7 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
             isNight={isNight}
             tasks={blockTasks}
             totalPoints={totalPoints}
-            capacityPercent={capacityPercent}
+            capacity={capacity}
             isOverCapacity={isOverCapacity}
             onQuickAdd={() => onQuickAdd(block.id)}
             onToggle={onToggle}
