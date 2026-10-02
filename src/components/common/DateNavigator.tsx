@@ -8,7 +8,6 @@ interface DateNavigatorProps {
   viewMode: 'day' | 'week' | 'month' | 'year';
   todayStr: string;
   language: keyof typeof TRANSLATIONS;
-  isLeftHanded?: boolean;
   onNavigate: (direction: number) => void;
   onToday: () => void;
 }
@@ -18,7 +17,6 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
   viewMode,
   todayStr,
   language,
-  isLeftHanded = false,
   onNavigate,
   onToday,
 }) => {
@@ -85,14 +83,14 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
   );
 
   // Figma-скриншот: Week Header 44x390 — во всю ширину экрана.
-  // Шевроны 44x44 с полем 18px от краёв, заголовок строго по центру, одна строка.
-  // Отдельной кнопки «сегодня» в макете нет — тап по заголовку возвращает к сегодня.
+  // Шевроны 44x44, 18px от краёв, направлены НАРУЖУ (‹ prev слева, › next справа),
+  // заголовок по центру одной строкой. Тап по заголовку — вернуться к сегодня.
   return (
     <div
       className="flex items-center justify-between h-11"
       style={{ minHeight: '44px', marginInline: '-16px', paddingInline: '18px' }}
     >
-      <div style={{ width: '44px' }}>{isLeftHanded ? chevronNext : chevronBtn}</div>
+      <div style={{ width: '44px' }}>{chevronBtn}</div>
 
       <button
         ref={todayRef}
@@ -112,7 +110,7 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
         {getTitle()}
       </button>
 
-      <div style={{ width: '44px' }}>{isLeftHanded ? chevronBtn : chevronNext}</div>
+      <div style={{ width: '44px' }}>{chevronNext}</div>
     </div>
   );
 };

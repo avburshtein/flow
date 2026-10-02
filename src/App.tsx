@@ -765,7 +765,6 @@ const App: React.FC = () => {
             viewMode={viewMode}
             todayStr={todayStr}
             language={settings.language}
-            isLeftHanded={settings.isLeftHanded}
             onNavigate={navigateDate}
             onToday={goToToday}
           />

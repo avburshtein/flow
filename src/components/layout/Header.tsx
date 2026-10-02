@@ -16,25 +16,25 @@ interface HeaderProps {
   onToggleRecovery: () => void;
 }
 
-/** Кольцевой индикатор прогресса — Figma: 52x52, track + «50%» fs=11/500 */
+/** Кольцевой индикатор — Figma-скрин: контейнер 52x52, кольцо ⌀40 */
 const ProgressRing: React.FC<{ value: number }> = ({ value }) => {
   const pct = Math.round(Math.min(1, Math.max(0, value)) * 100);
-  const R = 20;
+  const R = 17; // 17 + stroke/2 = 19.5 → внешний ⌀ ≈ 40px при strokeWidth 5
   const C = 2 * Math.PI * R;
   return (
-    <div className="relative shrink-0" style={{ width: 52, height: 52 }}>
-      <svg viewBox="0 0 48 48" width={52} height={52} style={{ transform: 'rotate(-90deg)' }} aria-hidden="true">
+    <div className="relative flex items-center justify-center shrink-0" style={{ width: 52, height: 52 }}>
+      <svg viewBox="0 0 40 40" width={40} height={40} style={{ transform: 'rotate(-90deg)' }} aria-hidden="true">
         <circle
-          cx="24" cy="24" r={R}
+          cx="20" cy="20" r={R}
           fill="none"
           stroke="var(--md-sys-color-secondary-container)"
-          strokeWidth="4"
+          strokeWidth="5"
         />
         <circle
-          cx="24" cy="24" r={R}
+          cx="20" cy="20" r={R}
           fill="none"
           stroke="var(--md-sys-color-primary)"
-          strokeWidth="4"
+          strokeWidth="5"
           strokeLinecap="round"
           strokeDasharray={C}
           strokeDashoffset={C * (1 - Math.min(1, Math.max(0, value)))}
@@ -86,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({
   // Скриншот: кнопки в правой колонке — view-тоггл (круг) слева, листик (r=12) справа;
   // кольцо прогресса 52x52 под ними, gap 10. Колонка прижата к правому краю.
   return (
-    <header className="flex items-start self-stretch px-6 pb-1 gap-[10px]">
+    <header className="flex items-start self-stretch px-4 pb-1 gap-[10px]">
       <div className="flex flex-col flex-1 min-w-0">
         <h1
           className="m-0 font-semibold"
