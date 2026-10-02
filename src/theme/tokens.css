@@ -276,6 +276,17 @@
   --flow-weight-deep-on-color: #4E3D75;
   --flow-weight-deep-on-color-rgb: 78 61 117;
 
+  /* ── Flow Custom: Week View (Light) ── */
+  /* Leading-иконка дня: today персиковый, остальные — лаванда #AE73F9
+     с альфой по нагрузке дня (Figma: 5/10/20%) */
+  --flow-week-leading-today-bg: #FFECE2;
+  --flow-week-leading-today-fg: #6E390E;
+  --flow-week-leading-fg: #AE73F9;
+  --flow-week-load-low: 5%;
+  --flow-week-load-medium: 10%;
+  --flow-week-load-high: 20%;
+  --flow-week-today-circle: #6C538C;
+
   /* ── Flow Custom: Time Blocks (Light) ── */
   /* Morning */
   --flow-block-morning: #8B4F24;
@@ -470,6 +481,15 @@
   --flow-weight-deep-color-rgb: 179 136 255;
   --flow-weight-deep-on-color: #37265C;
   --flow-weight-deep-on-color-rgb: 55 38 92;
+
+  /* ── Flow Custom: Week View (Dark) ── */
+  --flow-week-leading-today-bg: #3A2A18;
+  --flow-week-leading-today-fg: #FFDCC7;
+  --flow-week-leading-fg: #AE73F9;
+  --flow-week-load-low: 12%;
+  --flow-week-load-medium: 20%;
+  --flow-week-load-high: 30%;
+  --flow-week-today-circle: #D9BCFF;
 
   /* ── Flow Custom: Time Blocks (Dark) ── */
   /* Morning */
