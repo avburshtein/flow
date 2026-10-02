@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useButton } from 'react-aria';
-import { ChevronLeft, ChevronRight, RotateCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants.tsx';
 
 interface DateNavigatorProps {
@@ -30,9 +30,10 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
     { onPress: () => onNavigate(1), 'aria-label': TRANSLATIONS[language].next },
     useRef<HTMLButtonElement>(null)
   );
+  const todayRef = useRef<HTMLButtonElement>(null);
   const { buttonProps: todayProps } = useButton(
     { onPress: onToday, 'aria-label': TRANSLATIONS[language].today },
-    useRef<HTMLButtonElement>(null)
+    todayRef
   );
 
   const isToday = todayStr === viewDate.toISOString().split('T')[0];
@@ -54,13 +55,6 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
       case 'year':
         return viewDate.getFullYear().toString();
     }
-  };
-
-  const getSubtitle = () => {
-    if (viewMode === 'day') {
-      return viewDate.toLocaleDateString(language, { weekday: 'long' });
-    }
-    return TRANSLATIONS[language].upcoming;
   };
 
   const navButtonStyle: React.CSSProperties = {
@@ -90,82 +84,35 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
     </button>
   );
 
-  const todayBtn = (
-    <button
-      type="button"
-      className="flex items-center justify-center w-11 h-11 md-state-layer md-focus-ring"
-      style={navButtonStyle}
-      {...todayProps}
-    >
-      <RotateCw size={20} strokeWidth={2} />
-    </button>
-  );
-
-  // Figma: ‹ [заголовок по центру] › — 390x44
+  // Figma-скриншот: Week Header 44x390 — во всю ширину экрана.
+  // Шевроны 44x44 с полем 18px от краёв, заголовок строго по центру, одна строка.
+  // Отдельной кнопки «сегодня» в макете нет — тап по заголовку возвращает к сегодня.
   return (
     <div
-      className="flex items-center justify-between h-11 px-2"
-      style={{ minHeight: '44px' }}
+      className="flex items-center justify-between h-11"
+      style={{ minHeight: '44px', marginInline: '-16px', paddingInline: '18px' }}
     >
-      {isLeftHanded ? (
-        <>
-          {todayBtn}
-          <div className="flex items-center gap-1">
-            {chevronBtn}
-            {chevronNext}
-          </div>
-          <div className="flex-1 text-right">
-            <h2
-              className="font-semibold"
-              style={{
-                color: 'var(--md-sys-color-on-surface-variant)',
-                fontSize: 'var(--md-sys-typescale-title-medium-size)',
-                lineHeight: 'var(--md-sys-typescale-title-medium-line-height)',
-              }}
-            >
-              {getTitle()}
-            </h2>
-            <span
-              style={{
-                color: 'var(--md-sys-color-on-surface-variant)',
-                opacity: 0.7,
-                fontSize: 'var(--md-sys-typescale-label-small-size)',
-              }}
-            >
-              {getSubtitle()}
-            </span>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="flex-1 text-left">
-            <h2
-              className="font-semibold"
-              style={{
-                color: 'var(--md-sys-color-on-surface-variant)',
-                fontSize: 'var(--md-sys-typescale-title-medium-size)',
-                lineHeight: 'var(--md-sys-typescale-title-medium-line-height)',
-              }}
-            >
-              {getTitle()}
-            </h2>
-            <span
-              style={{
-                color: 'var(--md-sys-color-on-surface-variant)',
-                opacity: 0.7,
-                fontSize: 'var(--md-sys-typescale-label-small-size)',
-              }}
-            >
-              {getSubtitle()}
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            {chevronBtn}
-            {todayBtn}
-            {chevronNext}
-          </div>
-        </>
-      )}
+      <div style={{ width: '44px' }}>{isLeftHanded ? chevronNext : chevronBtn}</div>
+
+      <button
+        ref={todayRef}
+        type="button"
+        {...todayProps}
+        title={TRANSLATIONS[language].today}
+        className="flex-1 text-center truncate md-state-layer md-focus-ring mx-1"
+        style={{
+          fontWeight: 600,
+          color: 'var(--md-sys-color-on-surface-variant)',
+          fontSize: '16px', // Figma: fs=16 fw=600 lh=19.36
+          lineHeight: '19.36px',
+          borderRadius: 'var(--md-sys-shape-corner-medium)',
+          minHeight: '44px',
+        }}
+      >
+        {getTitle()}
+      </button>
+
+      <div style={{ width: '44px' }}>{isLeftHanded ? chevronBtn : chevronNext}</div>
     </div>
   );
 };

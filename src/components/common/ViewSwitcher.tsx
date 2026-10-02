@@ -34,7 +34,7 @@ const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ viewMode, onModeChange, lan
         display: 'flex',
         width: '100%',
         backgroundColor: 'transparent',
-        // Figma: Segmented button 358x52, обводка outline на всём контроле
+        // Figma-скриншот: Segmented button 358x44, обводка outline на всём контроле
         border: '1px solid var(--md-sys-color-outline)',
         borderRadius: 'var(--md-sys-shape-corner-full)',
         overflow: 'hidden',
@@ -43,9 +43,9 @@ const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ viewMode, onModeChange, lan
           borderRadius: '0 !important',
           margin: 0,
           flex: 1,
-          // Figma: container 90x44 внутри сегмента 90x52
-          minHeight: '52px',
-          padding: '4px 12px',
+          // Сегмент 89.25x44: контейнер = высоте контрола, разделители 1px
+          minHeight: '44px',
+          padding: '0 12px',
           gap: '8px',
           color: 'var(--md-sys-color-on-surface)',
           textTransform: 'none',
@@ -64,7 +64,7 @@ const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ viewMode, onModeChange, lan
             borderTopRightRadius: 'var(--md-sys-shape-corner-full)',
             borderBottomRightRadius: 'var(--md-sys-shape-corner-full)',
           },
-          // Figma: selected segment fill #E9DDFF, label #4D3D75
+          // Figma: selected segment fill secondary-container, label on-secondary-container
           '&.Mui-selected': {
             backgroundColor: 'var(--md-sys-color-secondary-container)',
             color: 'var(--md-sys-color-on-secondary-container)',
