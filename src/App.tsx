@@ -680,7 +680,8 @@ const App: React.FC = () => {
     <ThemeProvider theme={muiTheme}>
       <CssBaseline />
 
-      <div className="relative mx-auto min-h-screen max-w-lg px-4 pb-32 pt-6">
+      {/* pb = 88px тулбар + 4px гап до последнего блока (Figma) */}
+      <div className="relative mx-auto min-h-screen max-w-lg px-4 pb-[92px] pt-6">
         {isAlarmPlaying && (
           <AlarmPlayingModal settings={settings} onStop={stopAlarm} onSnooze={snoozeAlarm} />
         )}
@@ -759,8 +760,8 @@ const App: React.FC = () => {
           />
         </div>
 
-        {/* Figma-скриншот: свитчер → 30px → DateNavigator (390x44) → 12px → блоки */}
-        <div style={{ marginTop: '30px' }}>
+        {/* Figma-скриншот: свитчер → 20px → DateNavigator (390x44) → 12px → блоки */}
+        <div style={{ marginTop: '20px' }}>
           <DateNavigator
             viewDate={viewDate}
             viewMode={viewMode}
