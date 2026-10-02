@@ -63,9 +63,9 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                 transitionTimingFunction: 'var(--md-sys-motion-easing-emphasized-decel)',
             }}
         >
-                        {/* Figma Toolbar 390x64: pad 12/16/12/16, 5 слотов evenly spaced,
-                FAB строго по центру. Порядок: Planner, Voice, [FAB], Settings, Ideas. */}
-            <div className="flex items-center justify-between px-4 py-3 min-h-[56px]">
+            {/* Figma Toolbar: контент 64px (pad 12) + gesture bar 24px = 88px.
+                FAB 40x40, r=12, primary, белая иконка 24. */}
+            <div className="flex items-center justify-between px-4" style={{ height: 64 }}>
                 <IconButton onClick={onSmartPlannerClick} aria-label={t.smartPlanner} sx={SIDE_BTN_SX}>
                     <Sparkles size={24} strokeWidth={2} />
                 </IconButton>
@@ -84,15 +84,15 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                     <Mic size={24} strokeWidth={2} />
                 </IconButton>
 
-                {/* Central FAB — Figma: 56x56, r=12, primary, белая иконка */}
+                {/* Central FAB — Figma: 40x40 */}
                 <button
                     type="button"
                     onClick={onAddTaskClick}
                     aria-label={t.addTask}
                     className="flex items-center justify-center shrink-0"
                     style={{
-                        width: 56,
-                        height: 56,
+                        width: 40,
+                        height: 40,
                         borderRadius: 'var(--md-sys-shape-corner-medium)',
                         background: 'var(--md-sys-color-primary)',
                         color: 'var(--md-sys-color-on-primary)',
@@ -113,8 +113,8 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                 </IconButton>
             </div>
 
-            {/* Gesture bar — Figma: 108x4, r=12 */}
-            <div className="flex justify-center pb-2 pt-1">
+            {/* Gesture bar — Figma: 108x4, r=12, зона 24px */}
+            <div className="flex items-center justify-center" style={{ height: 24 }}>
                 <div
                     className="rounded-full"
                     style={{

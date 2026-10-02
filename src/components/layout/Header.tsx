@@ -87,8 +87,9 @@ const Header: React.FC<HeaderProps> = ({
   // кольцо прогресса 52x52 под ними, gap 10. Колонка прижата к правому краю.
   return (
     /* Контейнер App уже даёт px-4 — кнопки и кольцо на 16px от правого края экрана,
-       на одной вертикали с краем Selected button (у него тот же 16px отступ). */
-    <header className="flex items-start self-stretch pb-1 gap-[10px]">
+       на одной вертикали с краем Selected button (у него тот же 16px отступ).
+       pb-0: гап до свитчера задаёт строго marginTop: 20px у его обёртки в App. */
+    <header className="flex items-start self-stretch gap-[10px]">
       <div className="flex flex-col flex-1 min-w-0">
         <h1
           className="m-0 font-semibold"

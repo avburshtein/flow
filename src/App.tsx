@@ -750,7 +750,8 @@ const App: React.FC = () => {
           language={settings.language}
         />
 
-        <div className="pt-4">
+        {/* Figma: гап между кольцом прогресса и свитчером строго 20px */}
+        <div style={{ marginTop: '20px' }}>
           <ViewSwitcher
             viewMode={viewMode}
             onModeChange={setViewMode}
