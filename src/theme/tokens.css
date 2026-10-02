@@ -277,13 +277,15 @@
   --flow-weight-deep-on-color-rgb: 78 61 117;
 
   /* ── Flow Custom: Week View (Light) ── */
-  /* Leading-иконка дня: today персиковый, остальные — лаванда #AE73F9
-     с альфой по нагрузке дня (Figma: 5/10/20%) */
+  /* Leading-квадратик дня = GitHub-heat-map по легенде Year View:
+     #AE73F9 @5/@10/@15/@20 (Heatmap Legend: Less→More).
+     Today — персиковый контейнер morning-блока с иконкой активного периода. */
   --flow-week-leading-today-bg: #FFECE2;
   --flow-week-leading-today-fg: #6E390E;
   --flow-week-leading-fg: #AE73F9;
-  --flow-week-load-low: 5%;
-  --flow-week-load-medium: 10%;
+  --flow-week-load-empty: 5%;
+  --flow-week-load-low: 10%;
+  --flow-week-load-medium: 15%;
   --flow-week-load-high: 20%;
   --flow-week-today-circle: #6C538C;
 
@@ -487,12 +489,14 @@
   --flow-weight-deep-on-color-rgb: 55 38 92;
 
   /* ── Flow Custom: Week View (Dark) ── */
+  /* Те же 4 градации, альфа поднята для тёмного фона */
   --flow-week-leading-today-bg: #3A2A18;
   --flow-week-leading-today-fg: #FFDCC7;
   --flow-week-leading-fg: #AE73F9;
-  --flow-week-load-low: 12%;
-  --flow-week-load-medium: 20%;
-  --flow-week-load-high: 30%;
+  --flow-week-load-empty: 12%;
+  --flow-week-load-low: 20%;
+  --flow-week-load-medium: 30%;
+  --flow-week-load-high: 45%;
   --flow-week-today-circle: #D9BCFF;
 
   /* ── Flow Custom: Time Blocks (Dark) ── */

@@ -1,30 +1,54 @@
 import React from 'react';
-import { Task, Language, UserSettings } from '../../types.ts';
+import { Task, Language, TimeBlockConfig } from '../../types.ts';
+import { TRANSLATIONS } from '../../constants.tsx';
 import { useButton } from 'react-aria';
-import { Sunrise, Sun, Sunset, CupSoda, ChevronRight } from 'lucide-react';
+import { Sunrise, Sun, Sunset, Moon, ChevronRight } from 'lucide-react';
 
 interface WeekViewProps {
   viewDate: Date;
   tasks: Task[];
-  settings: UserSettings;
+  settings: unknown;
   todayStr: string;
   language: Language;
+  /** Активный блок дня — для иконки/фразы в today-строке */
+  activeBlock?: TimeBlockConfig;
 }
 
-/** Порог «высокой» нагрузки дня (pts) для supporting-текста «N high» */
-const HIGH_LOAD_THRESHOLD = 6;
+/** Порог нагрузки (pts): градации совпадают с легендой Year View (Less→More, 4 ступени) */
+const LOAD_EMPTY = 0;
+const LOAD_HIGH = 6;
 
-/** Иконка ведущего квадрата по типу дня — Figma: Morning/Work Balance/Busy day/Rest day */
-const DayIcon: React.FC<{ label: string }> = ({ label }) => {
-  const s = { size: 24, strokeWidth: 2 } as const;
-  if (label.startsWith('Rest')) return <CupSoda {...s} />;
-  if (label.startsWith('Busy')) return <Sun {...s} />;
-  if (label.startsWith('Work')) return <Sunset {...s} />;
-  return <Sunrise {...s} />;
+/** Фраза дня по нагрузке — 4 градации, синхронно с альфой квадратика (легенда Year View) */
+const dayLabel = (pts: number, language: Language) => {
+  const t = TRANSLATIONS[language];
+  if (pts === LOAD_EMPTY) return t.dayEmpty;
+  if (pts <= 3) return t.dayLight;
+  if (pts <= LOAD_HIGH) return t.dayBalanced;
+  return t.dayBusy;
 };
+
+/** Альфа leading-квадратика — те же 4 градации, что и фраза (GitHub-style) */
+const loadAlpha = (pts: number) =>
+  pts === LOAD_EMPTY
+    ? 'var(--flow-week-load-empty)'
+    : pts <= 3
+      ? 'var(--flow-week-load-low)'
+      : pts <= LOAD_HIGH
+        ? 'var(--flow-week-load-medium)'
+        : 'var(--flow-week-load-high)';
 
 /** Вес задачи в pts (дублирует WEIGHT_CONFIG по контракту Figma «N high») */
 const taskPts = (w: string) => (w === 'focused' ? 3 : w === 'deep' ? 6 : 1);
+
+/** Иконка активного блока дня — в Week View она есть ТОЛЬКО у today
+ *  (подсказывает, какой сейчас блок; остальные дни — чистый heat-map квадратик) */
+const ActiveBlockIcon: React.FC<{ period: string }> = ({ period }) => {
+  const s = { size: 24, strokeWidth: 2 } as const;
+  if (period === 'afternoon') return <Sun {...s} />;
+  if (period === 'evening') return <Sunset {...s} />;
+  if (period === 'night') return <Moon {...s} />;
+  return <Sunrise {...s} />;
+};
 
 /** Строка дня — Figma: 358x72, r=12, pad 10/16, gap 12 */
 const DayRow: React.FC<{
@@ -34,30 +58,21 @@ const DayRow: React.FC<{
   allDayTasks: Task[];
   language: Language;
   onPress: () => void;
-}> = ({ day, dStr, isToday, allDayTasks, language, onPress }) => {
+  /** Активный блок дня (today) — иконка + фраза «{block} block is active» */
+  activeBlock?: TimeBlockConfig;
+}> = ({ day, dStr, isToday, allDayTasks, language, onPress, activeBlock }) => {
   const ref = React.useRef<HTMLButtonElement>(null);
   const { buttonProps } = useButton({ onPress }, ref);
 
-  // Нагрузка дня в pts → альфа leading-иконки (Figma: 5/10/20%)
+  // Нагрузка дня в pts — 4 градации, альфа и фраза синхронны (легенда Year View)
   const totalPts = allDayTasks.reduce((sum, tk) => sum + taskPts(tk.weight), 0);
-  const loadVar =
-    totalPts > HIGH_LOAD_THRESHOLD
-      ? 'var(--flow-week-load-high)'
-      : totalPts > 0
-        ? 'var(--flow-week-load-medium)'
-        : 'var(--flow-week-load-low)';
-
   const highCount = allDayTasks.filter((tk) => tk.priority === 'high').length;
   const activeCount = allDayTasks.filter((tk) => !tk.completed).length;
 
-  // Тип дня по нагрузке (Figma-варианты leading-иконок)
+  // Фраза дня по загрузке (4 градации); у today — какой блок активен сейчас
   const label = isToday
-    ? 'Today'
-    : totalPts > HIGH_LOAD_THRESHOLD
-      ? 'Busy day'
-      : totalPts > 0
-        ? 'Work Balance'
-        : 'Rest day';
+    ? TRANSLATIONS[language].activeBlockPattern.replace('{block}', activeBlock?.label ?? '')
+    : dayLabel(totalPts, language);
 
   const weekdayShort = day
     .toLocaleDateString(language === 'ru' ? 'ru-RU' : 'en-US', { weekday: 'short' })
@@ -80,7 +95,8 @@ const DayRow: React.FC<{
         cursor: 'pointer',
       }}
     >
-      {/* Leading: иконка 40x40 r=12; today — персик, остальные — лаванда с альфой по нагрузке */}
+      {/* Leading: heat-map квадратик 40x40 r=12, насыщенность = нагрузка дня.
+          Иконка только у today — подсказывает активный блок дня (Figma). */}
       <div
         className="flex items-center justify-center shrink-0"
         style={{
@@ -89,11 +105,11 @@ const DayRow: React.FC<{
           borderRadius: 'var(--md-sys-shape-corner-medium)',
           background: isToday
             ? 'var(--flow-week-leading-today-bg)'
-            : `color-mix(in srgb, var(--flow-week-leading-fg) ${loadVar}, transparent)`,
+            : `color-mix(in srgb, var(--flow-week-leading-fg) ${loadAlpha(totalPts)}, transparent)`,
           color: isToday ? 'var(--flow-week-leading-today-fg)' : 'var(--flow-week-leading-fg)',
         }}
       >
-        <DayIcon label={label} />
+        {isToday && activeBlock && <ActiveBlockIcon period={activeBlock.id} />}
       </div>
 
       {/* Content: label fs16/400 + supporting fs14/400 «N high · N задач» */}
@@ -143,7 +159,7 @@ const DayRow: React.FC<{
   );
 };
 
-const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language }) => {
+const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language, activeBlock }) => {
   // Figma: неделя с понедельника (MO 22 … SU 28)
   const startOfWeek = new Date(viewDate);
   const dow = (viewDate.getDay() + 6) % 7; // 0 = Monday
@@ -167,6 +183,7 @@ const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language
             isToday={dStr === todayStr}
             allDayTasks={allDayTasks}
             language={language}
+            activeBlock={activeBlock}
             onPress={() => {}}
           />
         );
