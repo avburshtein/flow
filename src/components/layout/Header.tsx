@@ -1,8 +1,7 @@
 import React, { useRef } from 'react';
 import { useButton } from 'react-aria';
-import { Leaf } from 'lucide-react';
+import { Leaf, GalleryVertical, LayoutGrid } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants.tsx';
-import { IconRows, IconGridScan } from '../ui/figmaIcons.tsx';
 
 interface HeaderProps {
   currentTime: Date;
@@ -83,7 +82,9 @@ const Header: React.FC<HeaderProps> = ({
     return t.goodNight;
   };
 
-  // Figma: заголовок 33px / fw 600 / lh 40 / ls -0.4, цвет primary
+  // Figma: заголовок 33px / fw 600 / lh 40 / ls -0.4, цвет primary.
+  // Скриншот: кнопки в правой колонке — view-тоггл (круг) слева, листик (r=12) справа;
+  // кольцо прогресса 52x52 под ними, gap 10. Колонка прижата к правому краю.
   return (
     <header className="flex items-start self-stretch px-6 pb-1 gap-[10px]">
       <div className="flex flex-col flex-1 min-w-0">
@@ -100,10 +101,28 @@ const Header: React.FC<HeaderProps> = ({
         </h1>
       </div>
 
-      {/* Container buttons & progress — Figma: VERTICAL gap=10, 114x114 */}
-      <div className="flex flex-col shrink-0" style={{ gap: '10px' }}>
-        {/* Buttons 114x52: листик Recovery (квадрат r=12) + переключатель вида (круг r=100) */}
+      {/* Container buttons & progress — Figma: VERTICAL gap=10, align end */}
+      <div className="flex flex-col shrink-0 items-end" style={{ gap: '10px' }}>
+        {/* Buttons 114x52 */}
         <div className="flex items-center" style={{ gap: '10px' }}>
+          <button
+            ref={viewRef}
+            type="button"
+            {...viewProps}
+            aria-label={isListView ? t.gridView : t.listView}
+            className="flex items-center justify-center md-state-layer md-focus-ring"
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 'var(--md-sys-shape-corner-full)',
+              color: 'var(--md-sys-color-on-surface)',
+            }}
+          >
+            {isListView
+              ? <LayoutGrid size={24} strokeWidth={2} />
+              : <GalleryVertical size={24} strokeWidth={2} />}
+          </button>
+
           <button
             ref={leafRef}
             type="button"
@@ -119,25 +138,7 @@ const Header: React.FC<HeaderProps> = ({
                 : 'var(--md-sys-color-on-surface)',
             }}
           >
-            <Leaf size={22} strokeWidth={2} />
-          </button>
-
-          <button
-            ref={viewRef}
-            type="button"
-            {...viewProps}
-            aria-label={isListView ? t.gridView : t.listView}
-            className="flex items-center justify-center md-state-layer md-focus-ring"
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 'var(--md-sys-shape-corner-full)',
-              color: 'var(--md-sys-color-on-surface-variant)',
-            }}
-          >
-            {isListView
-              ? <IconGridScan size={22} strokeWidth={2} />
-              : <IconRows size={22} strokeWidth={2} />}
+            <Leaf size={24} strokeWidth={2} />
           </button>
         </div>
 

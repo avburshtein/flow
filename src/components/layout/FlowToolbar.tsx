@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import IconButton from '@mui/material/IconButton';
+import { Sparkles, Mic, Settings, Lightbulb, Plus } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants.tsx';
-import { IconSparkles, IconMic, IconGear, IconBulb, IconPlus } from '../ui/figmaIcons.tsx';
 import type { PrimaryInputMethod } from '../../types.ts';
 
 /** Figma: боковые кнопки тулбара 52x52 (touch target по Flow calm standard) */
@@ -67,7 +67,7 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                 FAB строго по центру. Порядок: Planner, Voice, [FAB], Settings, Ideas. */}
             <div className="flex items-center justify-between px-4 py-3 min-h-[56px]">
                 <IconButton onClick={onSmartPlannerClick} aria-label={t.smartPlanner} sx={SIDE_BTN_SX}>
-                    <IconSparkles size={20} strokeWidth={1.8} />
+                    <Sparkles size={24} strokeWidth={2} />
                 </IconButton>
 
                 <IconButton
@@ -81,7 +81,7 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                             : 'var(--md-sys-color-on-surface-variant)',
                     }}
                 >
-                    <IconMic size={20} strokeWidth={2} />
+                    <Mic size={24} strokeWidth={2} />
                 </IconButton>
 
                 {/* Central FAB — Figma: 56x56, r=12, primary, белая иконка */}
@@ -100,16 +100,16 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                     }}
                 >
                     {primaryInputMethod === 'voice'
-                        ? <IconMic size={20} strokeWidth={2} />
-                        : <IconPlus size={20} strokeWidth={2.2} />}
+                        ? <Mic size={24} strokeWidth={2} />
+                        : <Plus size={24} strokeWidth={2.4} />}
                 </button>
 
                 <IconButton onClick={onSettingsClick} aria-label={t.settings} sx={SIDE_BTN_SX}>
-                    <IconGear size={20} strokeWidth={1.8} />
+                    <Settings size={24} strokeWidth={2} />
                 </IconButton>
 
                 <IconButton onClick={onIdeasClick} aria-label={t.ideas} sx={SIDE_BTN_SX}>
-                    <IconBulb size={20} strokeWidth={1.8} />
+                    <Lightbulb size={24} strokeWidth={2} />
                 </IconButton>
             </div>
 

@@ -750,7 +750,7 @@ const App: React.FC = () => {
           language={settings.language}
         />
 
-        <div className="pt-4 pb-4">
+        <div className="pt-4">
           <ViewSwitcher
             viewMode={viewMode}
             onModeChange={setViewMode}
@@ -758,18 +758,23 @@ const App: React.FC = () => {
           />
         </div>
 
-        {/* Figma: DateNavigator стоит сразу под свитчером, над контентом */}
-        <DateNavigator
-          viewDate={viewDate}
-          viewMode={viewMode}
-          todayStr={todayStr}
-          language={settings.language}
-          isLeftHanded={settings.isLeftHanded}
-          onNavigate={navigateDate}
-          onToday={goToToday}
-        />
+        {/* Figma-скриншот: свитчер → 30px → DateNavigator (390x44) → 12px → блоки */}
+        <div style={{ marginTop: '30px' }}>
+          <DateNavigator
+            viewDate={viewDate}
+            viewMode={viewMode}
+            todayStr={todayStr}
+            language={settings.language}
+            isLeftHanded={settings.isLeftHanded}
+            onNavigate={navigateDate}
+            onToday={goToToday}
+          />
+        </div>
 
-        <main className="animate-in fade-in duration-500" style={{ marginTop: '16px' }}>
+        <main
+          className="animate-in fade-in duration-500"
+          style={{ marginTop: '12px', paddingInline: '2px' }}
+        >
           {viewMode === 'day' && (
             <DayView
               isRecoveryMode={isRecoveryMode}

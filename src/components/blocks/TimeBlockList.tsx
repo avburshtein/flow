@@ -51,7 +51,7 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
   return (
     <div
       className={isListView ? 'flex flex-col gap-6' : 'grid grid-cols-2'}
-      style={isListView ? undefined : { columnGap: '12px', rowGap: '28px' }}
+      style={isListView ? undefined : { columnGap: '8px', rowGap: '12px' }}
     >
       {blocks.map((block) => {
         const isActive = activePeriodId === block.id && todayStr === dateStr;
