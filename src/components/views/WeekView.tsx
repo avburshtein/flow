@@ -181,26 +181,43 @@ const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language
   });
 
   // Today не должен уползать за тулбар (воскресенье без скролла не видно).
-  // Порядок строк НЕ меняем (ментальная модель недели), просто докручиваем страницу
-  // так, чтобы today-строка была выше тулбара (88px) + гап 8.
-  // scrollIntoView('nearest') не подходит: fixed-тулбар не учитывается в viewport-расчёте.
+  // Скролл — ВНУТРИ контейнера списка (window не трогаем: header/свитчер остаются на месте).
+  // Неделя «проматывается чуть вверх» — юзер видит конец недели + today над тулбаром.
+  const listRef = React.useRef<HTMLDivElement>(null);
   const todayRowRef = React.useRef<HTMLButtonElement | null>(null);
   React.useEffect(() => {
-    const el = todayRowRef.current;
-    if (!el) return;
+    const list = listRef.current;
+    const row = todayRowRef.current;
+    if (!list || !row) return;
     const TOOLBAR = 96; // 88px тулбар + 8px зазор
-    const rect = el.getBoundingClientRect();
-    const limit = window.innerHeight - TOOLBAR;
-    if (rect.bottom > limit) {
-      window.scrollTo({
-        top: window.scrollY + (rect.bottom - limit),
+    const listRect = list.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    const visibleLimit = listRect.bottom - TOOLBAR;
+    if (rowRect.bottom > visibleLimit) {
+      list.scrollTo({
+        top: list.scrollTop + (rowRect.bottom - visibleLimit),
         behavior: 'smooth',
       });
     }
   }, [todayStr, viewDate]);
 
   return (
-    <div className="flex flex-col" style={{ gap: '12px' }}>
+    /* Фиксированная высота: viewport минус шапка/свитчер/навигатор (282px) и тулбар (88+12).
+       Скролл живёт внутри списка — header и навигация всегда на экране,
+       today докручивается сам (см. useEffect выше). */
+    <div
+      ref={listRef}
+      className="flex flex-col"
+      style={{
+        gap: '12px',
+        height: 'calc(100dvh - 382px)',
+        maxHeight: '560px',
+        overflowY: 'auto',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       {days.map((day) => {
         const dStr = day.toISOString().split('T')[0];
         const allDayTasks = tasks.filter((tk) => tk.dueDate === dStr);

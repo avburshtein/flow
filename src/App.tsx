@@ -110,12 +110,9 @@ const App: React.FC = () => {
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   // Recovery override: 'auto' — по времени суток (circadian), 'on' — принудительно,
   // 'off' — пользователь явно выключил (иначе вечером из recovery невозможно выйти)
-  const [recoveryOverride, setRecoveryOverride] = useState<'auto' | 'on' | 'off'>('auto');
-
-  // Синхронизация с сохранёнными настройками (SettingsModal → Save)
-  useEffect(() => {
-    setRecoveryOverride(settings.recoveryOverride ?? 'auto');
-  }, [settings.recoveryOverride]);
+  // Recovery: читаем прямо из settings (без дублирующего стейта — иначе рассинхрон).
+  // Листик в Header циклит auto → on → off → auto и сразу пишет в settings.
+  const recoveryOverride = settings.recoveryOverride ?? 'auto';
   const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceConfidence, setVoiceConfidence] = useState<number | undefined>();
@@ -709,9 +706,13 @@ const App: React.FC = () => {
           isRecoveryMode={isRecoveryMode}
           showRecoveryButton={recoveryOverride !== 'off'}
           onToggleView={() => setIsListView((prev) => !prev)}
-          onToggleRecovery={() =>
-            setRecoveryOverride((prev) => (prev === 'auto' ? 'on' : prev === 'on' ? 'off' : 'auto'))
-          }
+          onToggleRecovery={() => {
+            // Цикл auto → on → off → auto, сразу фиксируем в settings,
+            // чтобы Header/баннер/настройки всегда показывали одно и то же
+            const order = ['auto', 'on', 'off'] as const;
+            const next = order[(order.indexOf(recoveryOverride) + 1) % 3];
+            setSettings((prev) => ({ ...prev, recoveryOverride: next }));
+          }}
         />
 
         <VoiceFeedback
