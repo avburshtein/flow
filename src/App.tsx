@@ -111,6 +111,11 @@ const App: React.FC = () => {
   // Recovery override: 'auto' — по времени суток (circadian), 'on' — принудительно,
   // 'off' — пользователь явно выключил (иначе вечером из recovery невозможно выйти)
   const [recoveryOverride, setRecoveryOverride] = useState<'auto' | 'on' | 'off'>('auto');
+
+  // Синхронизация с сохранёнными настройками (SettingsModal → Save)
+  useEffect(() => {
+    setRecoveryOverride(settings.recoveryOverride ?? 'auto');
+  }, [settings.recoveryOverride]);
   const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceConfidence, setVoiceConfidence] = useState<number | undefined>();
@@ -702,6 +707,7 @@ const App: React.FC = () => {
           progress={dayProgress}
           isListView={isListView}
           isRecoveryMode={isRecoveryMode}
+          showRecoveryButton={recoveryOverride !== 'off'}
           onToggleView={() => setIsListView((prev) => !prev)}
           onToggleRecovery={() =>
             setRecoveryOverride((prev) => (prev === 'auto' ? 'on' : prev === 'on' ? 'off' : 'auto'))

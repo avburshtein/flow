@@ -181,11 +181,22 @@ const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language
   });
 
   // Today не должен уползать за тулбар (воскресенье без скролла не видно).
-  // Порядок строк НЕ меняем (ментальная модель недели), просто при монтировании
-  // и смене недели аккуратно докручиваем today в зону видимости.
+  // Порядок строк НЕ меняем (ментальная модель недели), просто докручиваем страницу
+  // так, чтобы today-строка была выше тулбара (88px) + гап 8.
+  // scrollIntoView('nearest') не подходит: fixed-тулбар не учитывается в viewport-расчёте.
   const todayRowRef = React.useRef<HTMLButtonElement | null>(null);
   React.useEffect(() => {
-    todayRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const el = todayRowRef.current;
+    if (!el) return;
+    const TOOLBAR = 96; // 88px тулбар + 8px зазор
+    const rect = el.getBoundingClientRect();
+    const limit = window.innerHeight - TOOLBAR;
+    if (rect.bottom > limit) {
+      window.scrollTo({
+        top: window.scrollY + (rect.bottom - limit),
+        behavior: 'smooth',
+      });
+    }
   }, [todayStr, viewDate]);
 
   return (
