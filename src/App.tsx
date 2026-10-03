@@ -811,6 +811,11 @@ const App: React.FC = () => {
               settings={settings}
               todayStr={todayStr}
               language={settings.language}
+              activePeriodId={activePeriodId}
+              onDayClick={(day) => {
+                setViewDate(day);
+                setViewMode('day');
+              }}
             />
           )}
 

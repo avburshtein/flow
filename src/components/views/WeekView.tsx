@@ -10,8 +10,10 @@ interface WeekViewProps {
   settings: unknown;
   todayStr: string;
   language: Language;
-  /** Активный блок дня — для иконки/фразы в today-строке */
-  activeBlock?: TimeBlockConfig;
+  /** Активный блок дня (TimePeriod) — цвет и иконка today-квадратика */
+  activePeriodId?: string;
+  /** Клик по дню → Day View этой даты */
+  onDayClick?: (day: Date) => void;
 }
 
 /** Порог нагрузки (pts): градации совпадают с легендой Year View (Less→More, 4 ступени) */
@@ -58,9 +60,9 @@ const DayRow: React.FC<{
   allDayTasks: Task[];
   language: Language;
   onPress: () => void;
-  /** Активный блок дня (today) — иконка + фраза «{block} block is active» */
-  activeBlock?: TimeBlockConfig;
-}> = ({ day, dStr, isToday, allDayTasks, language, onPress, activeBlock }) => {
+  /** Активный блок дня (today) — цвет и иконка квадратика */
+  activePeriodId?: string;
+}> = ({ day, dStr, isToday, allDayTasks, language, onPress, activePeriodId }) => {
   const ref = React.useRef<HTMLButtonElement>(null);
   const { buttonProps } = useButton({ onPress }, ref);
 
@@ -70,8 +72,9 @@ const DayRow: React.FC<{
   const activeCount = allDayTasks.filter((tk) => !tk.completed).length;
 
   // Фраза дня по загрузке (4 градации); у today — какой блок активен сейчас
+  const t = TRANSLATIONS[language];
   const label = isToday
-    ? TRANSLATIONS[language].activeBlockPattern.replace('{block}', activeBlock?.label ?? '')
+    ? t.activeBlockPattern.replace('{block}', t[activePeriodId as keyof typeof t] ?? '')
     : dayLabel(totalPts, language);
 
   const weekdayShort = day
@@ -95,8 +98,10 @@ const DayRow: React.FC<{
         cursor: 'pointer',
       }}
     >
-      {/* Leading: heat-map квадратик 40x40 r=12, насыщенность = нагрузка дня.
-          Иконка только у today — подсказывает активный блок дня (Figma). */}
+      {/* Leading: heat-map квадратик 40x40 r=12.
+          Остальные дни — насыщенность = нагрузка (легенда Year View).
+          Today — цвет контейнера АКТУАЛЬНОГО блока (утро-персик/день-голубой/вечер-лаванда)
+          + иконка этого блока. */}
       <div
         className="flex items-center justify-center shrink-0"
         style={{
@@ -104,12 +109,14 @@ const DayRow: React.FC<{
           height: 40,
           borderRadius: 'var(--md-sys-shape-corner-medium)',
           background: isToday
-            ? 'var(--flow-week-leading-today-bg)'
+            ? `var(--flow-block-${activePeriodId ?? 'morning'}-container)`
             : `color-mix(in srgb, var(--flow-week-leading-fg) ${loadAlpha(totalPts)}, transparent)`,
-          color: isToday ? 'var(--flow-week-leading-today-fg)' : 'var(--flow-week-leading-fg)',
+          color: isToday
+            ? `var(--flow-block-${activePeriodId ?? 'morning'}-on-container)`
+            : 'var(--flow-week-leading-fg)',
         }}
       >
-        {isToday && activeBlock && <ActiveBlockIcon period={activeBlock.id} />}
+        {isToday && <ActiveBlockIcon period={activePeriodId ?? 'morning'} />}
       </div>
 
       {/* Content: label fs16/400 + supporting fs14/400 «N high · N задач» */}
@@ -159,7 +166,7 @@ const DayRow: React.FC<{
   );
 };
 
-const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language, activeBlock }) => {
+const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language, activePeriodId, onDayClick }) => {
   // Figma: неделя с понедельника (MO 22 … SU 28)
   const startOfWeek = new Date(viewDate);
   const dow = (viewDate.getDay() + 6) % 7; // 0 = Monday
@@ -183,8 +190,8 @@ const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language
             isToday={dStr === todayStr}
             allDayTasks={allDayTasks}
             language={language}
-            activeBlock={activeBlock}
-            onPress={() => {}}
+            activePeriodId={activePeriodId}
+            onPress={() => onDayClick?.(day)}
           />
         );
       })}
