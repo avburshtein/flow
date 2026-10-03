@@ -62,8 +62,11 @@ const DayRow: React.FC<{
   onPress: () => void;
   /** Активный блок дня (today) — цвет и иконка квадратика */
   activePeriodId?: string;
-}> = ({ day, dStr, isToday, allDayTasks, language, onPress, activePeriodId }) => {
-  const ref = React.useRef<HTMLButtonElement>(null);
+  /** Ref на today-строку для scrollIntoView */
+  rowRef?: React.RefObject<HTMLButtonElement | null>;
+}> = ({ day, dStr, isToday, allDayTasks, language, onPress, activePeriodId, rowRef }) => {
+  const localRef = React.useRef<HTMLButtonElement>(null);
+  const ref = rowRef ?? localRef;
   const { buttonProps } = useButton({ onPress }, ref);
 
   // Нагрузка дня в pts — 4 градации, альфа и фраза синхронны (легенда Year View)
@@ -177,6 +180,14 @@ const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language
     return d;
   });
 
+  // Today не должен уползать за тулбар (воскресенье без скролла не видно).
+  // Порядок строк НЕ меняем (ментальная модель недели), просто при монтировании
+  // и смене недели аккуратно докручиваем today в зону видимости.
+  const todayRowRef = React.useRef<HTMLButtonElement | null>(null);
+  React.useEffect(() => {
+    todayRowRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [todayStr, viewDate]);
+
   return (
     <div className="flex flex-col" style={{ gap: '12px' }}>
       {days.map((day) => {
@@ -192,6 +203,7 @@ const WeekView: React.FC<WeekViewProps> = ({ viewDate, tasks, todayStr, language
             language={language}
             activePeriodId={activePeriodId}
             onPress={() => onDayClick?.(day)}
+            rowRef={dStr === todayStr ? todayRowRef : undefined}
           />
         );
       })}

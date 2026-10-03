@@ -101,6 +101,7 @@ const App: React.FC = () => {
   const [tempAlarm, setTempAlarm] = useState<AlarmConfig>(settings.alarm);
   const [tempLeftHanded, setTempLeftHanded] = useState<boolean>(settings.isLeftHanded ?? false);
   const [tempInputMethod, setTempInputMethod] = useState<PrimaryInputMethod>(settings.primaryInputMethod ?? 'text');
+  const [tempRecoveryOverride, setTempRecoveryOverride] = useState<'auto' | 'on' | 'off'>(settings.recoveryOverride ?? 'auto');
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [capacityNotification, setCapacityNotification] = useState<CapacityNotification | null>(null);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(() =>
@@ -623,6 +624,7 @@ const App: React.FC = () => {
       alarm: tempAlarm,
       isLeftHanded: tempLeftHanded,
       primaryInputMethod: tempInputMethod,
+      recoveryOverride: tempRecoveryOverride,
     });
     setSettingsError(null);
     setShowSettings(false);
@@ -867,8 +869,10 @@ const App: React.FC = () => {
             onTempLangChange={setTempLang}
             tempLeftHanded={tempLeftHanded}
             tempInputMethod={tempInputMethod}
+            tempRecoveryOverride={tempRecoveryOverride}
             onTempLeftHandedChange={setTempLeftHanded}
             onTempInputMethodChange={setTempInputMethod}
+            onTempRecoveryOverrideChange={setTempRecoveryOverride}
           />
         )}
 

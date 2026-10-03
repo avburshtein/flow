@@ -21,6 +21,8 @@ interface SettingsModalProps {
   tempAlarm: AlarmConfig;
   tempLeftHanded: boolean;
   tempInputMethod: PrimaryInputMethod;
+  /** Recovery Mode: auto / on / off */
+  tempRecoveryOverride: 'auto' | 'on' | 'off';
   isDirty: boolean;
   error: string | null;
   voiceSettings?: VoiceSettings;
@@ -32,6 +34,7 @@ interface SettingsModalProps {
   onTempLangChange: (lang: Language) => void;
   onTempLeftHandedChange: (value: boolean) => void;
   onTempInputMethodChange: (value: PrimaryInputMethod) => void;
+  onTempRecoveryOverrideChange: (value: 'auto' | 'on' | 'off') => void;
   onVoiceSettingsChange?: (settings: VoiceSettings) => void;
 }
 
@@ -45,6 +48,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   tempAlarm,
   tempLeftHanded,
   tempInputMethod,
+  tempRecoveryOverride,
   isDirty,
   error,
   voiceSettings,
@@ -56,6 +60,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onTempLangChange,
   onTempLeftHandedChange,
   onTempInputMethodChange,
+  onTempRecoveryOverrideChange,
   onVoiceSettingsChange
 }) => {
   const t = TRANSLATIONS[settings.language];
@@ -290,6 +295,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               />
             </span>
           </button>
+
+          {/* Recovery Mode — auto (по циркадному времени) / принудительно вкл/выкл.
+              Вынесено из кликов по листику в Header: явная настройка вместо скрытого tri-state. */}
+          <div className="space-y-2">
+            <label className="flow-label">{t.recoveryMode}</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['auto', 'on', 'off'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  aria-pressed={tempRecoveryOverride === mode}
+                  onClick={() => onTempRecoveryOverrideChange(mode)}
+                  className={`flow-chip ${tempRecoveryOverride === mode ? 'flow-chip--selected' : ''}`}
+                >
+                  {mode === 'auto' ? t.recoveryAuto : mode === 'on' ? t.recoveryOn : t.recoveryOff}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Voice Control Section */}
           {voiceSettings && onVoiceSettingsChange && (

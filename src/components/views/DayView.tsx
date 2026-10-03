@@ -51,22 +51,16 @@ const DayView: React.FC<DayViewProps> = ({
   onDeleteAllCompleted,
   onDeleteAll,
 }) => {
-  // Figma 786-22114: пустой день — компактный инвайт-баннер вместо пустой сетки
-  const isDayEmpty = tasks.length === 0;
-
   return (
     <div style={{ overflow: 'visible' }}>
-      {/* Figma 786-22114 / 591-19197: компактный баннер 51px — инвайт на пустой день
-          или уведомление Recovery. Больше не съедает экран (было ~350px с цитатой). */}
-      {/* Figma 786-22114: гапы 12px сверху и снизу баннера (main content gap=12) */}
-      {(isRecoveryMode || isDayEmpty) && (
+      {/* Figma 591-19197: только Recovery-баннер (51px, гапы 12).
+          Пустой день — без баннера: empty state живёт внутри блоков (иконки 40x40 seed@50%). */}
+      {isRecoveryMode && (
         <div style={{ marginTop: '12px', marginBottom: '12px' }}>
           <RecoveryBanner
             isWindDown={isWindDown}
             currentTime={currentTime}
             language={language}
-            isEmptyDay={!isRecoveryMode && isDayEmpty}
-            onAddTask={isDayEmpty && !isRecoveryMode ? () => onQuickAdd(activePeriodId) : undefined}
           />
         </div>
       )}

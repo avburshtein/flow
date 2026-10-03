@@ -38,6 +38,8 @@ export interface UserSettings {
   isLeftHanded?: boolean;
   /** Определяет иконку центральной FAB в тулбаре */
   primaryInputMethod?: PrimaryInputMethod;
+  /** Recovery Mode: auto — по циркадному времени, on/off — ручное перекрытие */
+  recoveryOverride?: 'auto' | 'on' | 'off';
 }
 
 export interface Task {
