@@ -107,7 +107,9 @@ const App: React.FC = () => {
     readStoredJson('flow_voice_settings', { ...DEFAULT_VOICE_SETTINGS, language: settings.language })
   );
   const [isVoiceListening, setIsVoiceListening] = useState(false);
-  const [isRecoveryForced, setIsRecoveryForced] = useState(false);
+  // Recovery override: 'auto' — по времени суток (circadian), 'on' — принудительно,
+  // 'off' — пользователь явно выключил (иначе вечером из recovery невозможно выйти)
+  const [recoveryOverride, setRecoveryOverride] = useState<'auto' | 'on' | 'off'>('auto');
   const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceConfidence, setVoiceConfidence] = useState<number | undefined>();
@@ -144,8 +146,13 @@ const App: React.FC = () => {
     [settings, currentTime]
   );
   const isRecoveryMode = useMemo(
-    () => isRecoveryForced || getIsRecoveryMode(settings, currentTime, activePeriodId, isWindDown),
-    [settings, currentTime, activePeriodId, isWindDown, isRecoveryForced]
+    () =>
+      recoveryOverride === 'on'
+        ? true
+        : recoveryOverride === 'off'
+          ? false
+          : getIsRecoveryMode(settings, currentTime, activePeriodId, isWindDown),
+    [settings, currentTime, activePeriodId, isWindDown, recoveryOverride]
   );
   // Кольцевой индикатор в Header: доля выполненных задач дня (Figma: «50%»)
   const dayProgress = useMemo(() => {
@@ -694,7 +701,9 @@ const App: React.FC = () => {
           isListView={isListView}
           isRecoveryMode={isRecoveryMode}
           onToggleView={() => setIsListView((prev) => !prev)}
-          onToggleRecovery={() => setIsRecoveryForced((prev) => !prev)}
+          onToggleRecovery={() =>
+            setRecoveryOverride((prev) => (prev === 'auto' ? 'on' : prev === 'on' ? 'off' : 'auto'))
+          }
         />
 
         <VoiceFeedback
