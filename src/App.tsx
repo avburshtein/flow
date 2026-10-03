@@ -137,8 +137,11 @@ const App: React.FC = () => {
     return tempWake !== settings.wakeUpTime ||
       tempRest !== settings.restTime ||
       tempLang !== settings.language ||
-      JSON.stringify(tempAlarm) !== JSON.stringify(settings.alarm);
-  }, [tempWake, tempRest, tempLang, tempAlarm, settings]);
+      JSON.stringify(tempAlarm) !== JSON.stringify(settings.alarm) ||
+      tempLeftHanded !== (settings.isLeftHanded ?? false) ||
+      tempInputMethod !== (settings.primaryInputMethod ?? 'text') ||
+      tempRecoveryOverride !== (settings.recoveryOverride ?? 'auto');
+  }, [tempWake, tempRest, tempLang, tempAlarm, tempLeftHanded, tempInputMethod, tempRecoveryOverride, settings]);
 
   const isWindDown = useMemo(
     () => getIsWindDown(settings.restTime, currentTime),
@@ -884,7 +887,15 @@ const App: React.FC = () => {
         )}
 
         <FlowToolbar
-          onSettingsClick={() => setShowSettings(true)}
+          onSettingsClick={() => {
+            // Каждый раз при открытии настроек подтягиваем актуальные значения:
+            // temp-стейты инициализируются один раз и могут устареть
+            // (например, recoveryOverride изменён листиком в Header)
+            setTempRecoveryOverride(settings.recoveryOverride ?? 'auto');
+            setTempLeftHanded(settings.isLeftHanded ?? false);
+            setTempInputMethod(settings.primaryInputMethod ?? 'text');
+            setShowSettings(true);
+          }}
           onIdeasClick={() => setShowIdeas(true)}
           onVoiceClick={toggleVoiceListening}
           onAddTaskClick={openTaskSheet}
