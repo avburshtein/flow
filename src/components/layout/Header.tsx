@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useButton } from 'react-aria';
-import { Leaf, GalleryVertical, LayoutGrid } from 'lucide-react';
+import { Leaf, RefreshCw, GalleryVertical, LayoutGrid } from 'lucide-react';
 import { TRANSLATIONS } from '../../constants.tsx';
 
 interface HeaderProps {
@@ -10,11 +10,10 @@ interface HeaderProps {
   /** Доля выполненных задач дня, 0..1 — для кольцевого индикатора */
   progress?: number;
   isListView: boolean;
-  /** Recovery Mode активен (баннер + ёмкость 10) */
+  /** Recovery Mode активен (RefreshCw-иконка + баннер + ёмкость 10) */
   isRecoveryMode?: boolean;
-  /** false — режим зафиксирован «Always off» в настройках, кнопка скрывается */
-  showRecoveryButton?: boolean;
   onToggleView: () => void;
+  /** Быстрый тап-тоггл: активный Recovery → off, неактивный → on */
   onToggleRecovery: () => void;
 }
 
@@ -60,7 +59,6 @@ const Header: React.FC<HeaderProps> = ({
   progress = 0,
   isListView,
   isRecoveryMode = false,
-  showRecoveryButton = true,
   onToggleView,
   onToggleRecovery,
 }) => {
@@ -109,8 +107,8 @@ const Header: React.FC<HeaderProps> = ({
 
       {/* Container buttons & progress — Figma: VERTICAL gap=10, align end */}
       <div className="flex flex-col shrink-0 items-end" style={{ gap: '10px' }}>
-        {/* Buttons: view-тоггл + (листик Recovery, если не «Always off»).
-            При скрытом листике view-кнопка сдвигается к правому краю (16px). */}
+        {/* Buttons: view-тоггл + Recovery-тоггл (Leaf ↔ RefreshCw).
+            Leaf = обычный режим (тап → on), RefreshCw = активный Recovery (тап → off). */}
         <div className="flex items-center" style={{ gap: '10px' }}>
           <button
             ref={viewRef}
@@ -130,25 +128,25 @@ const Header: React.FC<HeaderProps> = ({
               : <GalleryVertical size={24} strokeWidth={2} />}
           </button>
 
-          {showRecoveryButton && (
-            <button
-              ref={leafRef}
-              type="button"
-              {...leafProps}
-              aria-label={t.recoveryMode}
-              className="flex items-center justify-center md-state-layer md-focus-ring"
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: 'var(--md-sys-shape-corner-medium)',
-                color: isRecoveryMode
-                  ? 'var(--md-sys-color-primary)'
-                  : 'var(--md-sys-color-on-surface)',
-              }}
-            >
-              <Leaf size={24} strokeWidth={2} />
-            </button>
-          )}
+          <button
+            ref={leafRef}
+            type="button"
+            {...leafProps}
+            aria-label={t.recoveryMode}
+            className="flex items-center justify-center md-state-layer md-focus-ring"
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 'var(--md-sys-shape-corner-medium)',
+              color: isRecoveryMode
+                ? 'var(--md-sys-color-primary)'
+                : 'var(--md-sys-color-on-surface)',
+            }}
+          >
+            {isRecoveryMode
+              ? <RefreshCw size={24} strokeWidth={2} />
+              : <Leaf size={24} strokeWidth={2} />}
+          </button>
         </div>
 
         <ProgressRing value={progress} />

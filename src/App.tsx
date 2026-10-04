@@ -707,14 +707,11 @@ const App: React.FC = () => {
           progress={dayProgress}
           isListView={isListView}
           isRecoveryMode={isRecoveryMode}
-          showRecoveryButton={recoveryOverride !== 'off'}
           onToggleView={() => setIsListView((prev) => !prev)}
           onToggleRecovery={() => {
-            // Цикл auto → on → off → auto, сразу фиксируем в settings,
-            // чтобы Header/баннер/настройки всегда показывали одно и то же
-            const order = ['auto', 'on', 'off'] as const;
-            const next = order[(order.indexOf(recoveryOverride) + 1) % 3];
-            setSettings((prev) => ({ ...prev, recoveryOverride: next }));
+            // Быстрый тап-тоггл: активный Recovery → off, неактивный → on.
+            // Сразу фиксируем в settings, чтобы Header/баннер/настройки совпадали
+            setSettings((prev) => ({ ...prev, recoveryOverride: isRecoveryMode ? 'off' : 'on' }));
           }}
         />
 
