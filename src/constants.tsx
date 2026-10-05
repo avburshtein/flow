@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Sun, SunDim, CloudMoon, Moon, Zap, Target, Layers, Heart } from 'lucide-react';
+import { Sun, SunDim, CloudMoon, Moon, Sunrise, Sunset, Zap, Target, Layers, Heart } from 'lucide-react';
 import { TimePeriod, TimeBlockConfig, TaskWeight } from './types';
 
 export const WEIGHT_CONFIG = {
@@ -448,6 +448,10 @@ export const getIcon = (iconName: string, className?: string, size: number = 24)
     case 'CloudMoon': return <CloudMoon size={size} className={className} />;
     case 'Moon': return <Moon size={size} className={className} />;
     case 'Heart': return <Heart size={size} className={className} />;
+    /* Empty states Day View — Figma: иконка 40x40 в seed-цвете, op 50% */
+    case 'sunrise': return <Sunrise size={size} className={className} />;
+    case 'sun': return <Sun size={size} className={className} />;
+    case 'sunset': return <Sunset size={size} className={className} />;
     default: return null;
   }
 };

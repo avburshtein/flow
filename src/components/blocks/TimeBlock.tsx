@@ -197,15 +197,17 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
             </div>
           )
         ) : (
-          /* Figma Empty States: иконка 40x40 в seed-цвете, op 50% — без текста */
+          /* Figma Empty States: квадрат 40x40, глиф 24px в seed-цвете, op 50% — без текста */
           <div
             className="flex items-center justify-center h-full px-4"
             style={{ opacity: 0.5, color: seedColor }}
           >
             <span className="sr-only">{t.noTasksScheduled}</span>
-            {block.id === TimePeriod.MORNING && getIcon('sunrise', 'w-10 h-10')}
-            {block.id === TimePeriod.AFTERNOON && getIcon('sun', 'w-10 h-10')}
-            {block.id === TimePeriod.EVENING && getIcon('sunset', 'w-10 h-10')}
+            <div className="w-10 h-10 flex items-center justify-center">
+              {block.id === TimePeriod.MORNING && getIcon('sunrise', undefined, 24)}
+              {block.id === TimePeriod.AFTERNOON && getIcon('sun', undefined, 24)}
+              {block.id === TimePeriod.EVENING && getIcon('sunset', undefined, 24)}
+            </div>
           </div>
         )}
       </div>
