@@ -91,7 +91,7 @@ const DayRow: React.FC<{
       className="w-full flex items-center text-left md-state-layer md-focus-ring"
       style={{
         minHeight: '72px',
-        padding: '10px 16px',
+        padding: '12px 16px',
         gap: '12px',
         borderRadius: 'var(--md-sys-shape-corner-large)',
         background: isToday
@@ -126,13 +126,25 @@ const DayRow: React.FC<{
       <div className="flex-1 min-w-0">
         <div
           className="truncate"
-          style={{ fontSize: 16, fontWeight: 400, lineHeight: '24px', letterSpacing: '0.5px', color: 'var(--md-sys-color-on-surface)' }}
+          style={{
+            fontSize: 'var(--md-sys-typescale-title-medium-size)',
+            fontWeight: 'var(--md-sys-typescale-title-medium-weight)',
+            lineHeight: 'var(--md-sys-typescale-title-medium-line-height)',
+            letterSpacing: 'var(--md-sys-typescale-title-medium-letter-spacing)',
+            color: 'var(--md-sys-color-on-surface)',
+          }}
         >
           {label}
         </div>
         <div
           className="truncate"
-          style={{ fontSize: 14, fontWeight: 400, lineHeight: '20px', letterSpacing: '0.25px', color: 'var(--md-sys-color-on-surface-variant)' }}
+          style={{
+            fontSize: 'var(--md-sys-typescale-body-medium-size)',
+            fontWeight: 'var(--md-sys-typescale-body-medium-weight)',
+            lineHeight: 'var(--md-sys-typescale-body-medium-line-height)',
+            letterSpacing: 'var(--md-sys-typescale-body-medium-letter-spacing)',
+            color: 'var(--md-sys-color-on-surface-variant)',
+          }}
         >
           {highCount} high · {activeCount} {language === 'ru' ? 'задач' : 'tasks'}
         </div>
@@ -150,14 +162,27 @@ const DayRow: React.FC<{
               background: 'var(--flow-week-today-circle)',
             }}
           >
-            <span style={{ color: 'var(--md-sys-color-on-primary)', fontSize: 14, fontWeight: 500, lineHeight: '20px' }}>
+            <span
+              style={{
+                color: 'var(--md-sys-color-on-primary)',
+                fontSize: 'var(--md-sys-typescale-label-large-size)',
+                fontWeight: 'var(--md-sys-typescale-label-large-weight)',
+                lineHeight: 'var(--md-sys-typescale-label-large-line-height)',
+              }}
+            >
               {day.getDate()}
             </span>
           </div>
         ) : (
           <div
             className="flex flex-col items-center"
-            style={{ fontSize: 14, fontWeight: 600, lineHeight: '20px', letterSpacing: '0.1px', color: 'var(--md-sys-color-on-surface-variant)' }}
+            style={{
+              fontSize: 'var(--md-sys-typescale-label-large-size)',
+              fontWeight: 'var(--md-sys-typescale-label-large-weight)',
+              lineHeight: 'var(--md-sys-typescale-label-large-line-height)',
+              letterSpacing: 'var(--md-sys-typescale-label-large-letter-spacing)',
+              color: 'var(--md-sys-color-on-surface-variant)',
+            }}
           >
             <span>{weekdayShort}</span>
             <span>{day.getDate()}</span>

@@ -88,7 +88,7 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
   return (
     <div
       className="flex items-center justify-between h-11"
-      style={{ minHeight: '44px', marginInline: '-16px', paddingInline: '18px' }}
+      style={{ minHeight: '44px', marginInline: '-16px', paddingInline: '16px' }}
     >
       <div style={{ width: '44px' }}>{chevronBtn}</div>
 
@@ -99,10 +99,12 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({
         title={TRANSLATIONS[language].today}
         className="flex-1 text-center truncate md-state-layer md-focus-ring mx-1"
         style={{
-          fontWeight: 600,
+          /* Заголовок — M3 title-medium (16/24/500/0.15). figma: fw600 lh19.36 → токен */
+          fontWeight: 'var(--md-sys-typescale-title-medium-weight)',
           color: 'var(--md-sys-color-on-surface-variant)',
-          fontSize: '16px', // Figma: fs=16 fw=600 lh=19.36
-          lineHeight: '19.36px',
+          fontSize: 'var(--md-sys-typescale-title-medium-size)',
+          lineHeight: 'var(--md-sys-typescale-title-medium-line-height)',
+          letterSpacing: 'var(--md-sys-typescale-title-medium-letter-spacing)',
           borderRadius: 'var(--md-sys-shape-corner-medium)',
           minHeight: '44px',
         }}

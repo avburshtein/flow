@@ -35,9 +35,9 @@ const RecoveryBanner: React.FC<RecoveryBannerProps> = ({ isWindDown, language, i
       disabled={!isInvite}
       className="w-full flex items-center text-left md-state-layer md-focus-ring"
       style={{
-        minHeight: '51px',
+        minHeight: '52px',
         maxHeight: '52px',
-        padding: '10px 16px',
+        padding: '12px 16px',
         gap: '8px',
         borderRadius: 'var(--md-sys-shape-corner-large)',
         border: `1px solid ${isInvite ? 'var(--flow-week-leading-fg)' : 'var(--md-sys-color-primary)'}`,
@@ -50,10 +50,11 @@ const RecoveryBanner: React.FC<RecoveryBannerProps> = ({ isWindDown, language, i
       <span
         className="truncate"
         style={{
-          fontSize: 12,
-          fontWeight: 500,
-          lineHeight: '16px',
-          letterSpacing: '0.5px',
+          /* M3 label-medium (12/16/500/0.5) — точное совпадение с Figma */
+          fontSize: 'var(--md-sys-typescale-label-medium-size)',
+          fontWeight: 'var(--md-sys-typescale-label-medium-weight)',
+          lineHeight: 'var(--md-sys-typescale-label-medium-line-height)',
+          letterSpacing: 'var(--md-sys-typescale-label-medium-letter-spacing)',
           color: isInvite
             ? 'var(--md-sys-color-outline)'
             : 'var(--md-sys-color-on-surface-variant)',

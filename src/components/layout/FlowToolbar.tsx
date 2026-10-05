@@ -84,25 +84,31 @@ export const FlowToolbar: React.FC<FlowToolbarProps> = ({
                     <Mic size={24} strokeWidth={2} />
                 </IconButton>
 
-                {/* Central FAB — Figma: 40x40 */}
-                <button
-                    type="button"
-                    onClick={onAddTaskClick}
-                    aria-label={t.addTask}
+                {/* Central FAB — M3 Medium FAB: визуал 40x40 (r=16) внутри
+                    touch-контейнера 56x56 (a11y: touch target >= 48px) */}
+                <div
                     className="flex items-center justify-center shrink-0"
-                    style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 'var(--md-sys-shape-corner-medium)',
-                        background: 'var(--md-sys-color-primary)',
-                        color: 'var(--md-sys-color-on-primary)',
-                        boxShadow: 'var(--md-sys-elevation-shadow-2)',
-                    }}
+                    style={{ width: 56, height: 56 }}
                 >
-                    {primaryInputMethod === 'voice'
-                        ? <Mic size={24} strokeWidth={2} />
-                        : <Plus size={24} strokeWidth={2.4} />}
-                </button>
+                    <button
+                        type="button"
+                        onClick={onAddTaskClick}
+                        aria-label={t.addTask}
+                        className="flex items-center justify-center"
+                        style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 'var(--md-sys-shape-corner-medium)',
+                            background: 'var(--md-sys-color-primary)',
+                            color: 'var(--md-sys-color-on-primary)',
+                            boxShadow: 'var(--md-sys-elevation-shadow-2)',
+                        }}
+                    >
+                        {primaryInputMethod === 'voice'
+                            ? <Mic size={24} strokeWidth={2} />
+                            : <Plus size={24} strokeWidth={2.4} />}
+                    </button>
+                </div>
 
                 <IconButton onClick={onSettingsClick} aria-label={t.settings} sx={SIDE_BTN_SX}>
                     <Settings size={24} strokeWidth={2} />

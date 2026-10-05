@@ -95,9 +95,10 @@ const Header: React.FC<HeaderProps> = ({
         <h1
           className="m-0 font-semibold"
           style={{
-            fontSize: '33px',
-            lineHeight: '40px',
-            letterSpacing: '-0.4px',
+            /* Greeting — M3 headline-large (32/40/600). figma: 33px → токен (Token-first) */
+            fontSize: 'var(--md-sys-typescale-headline-large-size)',
+            lineHeight: 'var(--md-sys-typescale-headline-large-line-height)',
+            letterSpacing: 'var(--md-sys-typescale-headline-large-letter-spacing)',
             color: 'var(--md-sys-color-primary)',
           }}
         >
@@ -105,11 +106,11 @@ const Header: React.FC<HeaderProps> = ({
         </h1>
       </div>
 
-      {/* Container buttons & progress — Figma: VERTICAL gap=10, align end */}
-      <div className="flex flex-col shrink-0 items-end" style={{ gap: '10px' }}>
+      {/* Container buttons & progress — right column, выровнена на 16px от края */}
+      <div className="flex flex-col shrink-0 items-end" style={{ gap: '12px' }}>
         {/* Buttons: view-тоггл + Recovery-тоггл (Leaf ↔ RefreshCw).
             Leaf = обычный режим (тап → on), RefreshCw = активный Recovery (тап → off). */}
-        <div className="flex items-center" style={{ gap: '10px' }}>
+        <div className="flex items-center" style={{ gap: '12px' }}>
           <button
             ref={viewRef}
             type="button"
