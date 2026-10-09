@@ -101,18 +101,13 @@ const App: React.FC = () => {
   const [tempAlarm, setTempAlarm] = useState<AlarmConfig>(settings.alarm);
   const [tempLeftHanded, setTempLeftHanded] = useState<boolean>(settings.isLeftHanded ?? false);
   const [tempInputMethod, setTempInputMethod] = useState<PrimaryInputMethod>(settings.primaryInputMethod ?? 'text');
-  const [tempRecoveryOverride, setTempRecoveryOverride] = useState<'auto' | 'on' | 'off'>(settings.recoveryOverride ?? 'auto');
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [capacityNotification, setCapacityNotification] = useState<CapacityNotification | null>(null);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(() =>
     readStoredJson('flow_voice_settings', { ...DEFAULT_VOICE_SETTINGS, language: settings.language })
   );
   const [isVoiceListening, setIsVoiceListening] = useState(false);
-  // Recovery override: 'auto' — по времени суток (circadian), 'on' — принудительно,
-  // 'off' — пользователь явно выключил (иначе вечером из recovery невозможно выйти)
-  // Recovery: читаем прямо из settings (без дублирующего стейта — иначе рассинхрон).
-  // Листик в Header циклит auto → on → off → auto и сразу пишет в settings.
-  const recoveryOverride = settings.recoveryOverride ?? 'auto';
+  const [isRecoveryForced, setIsRecoveryForced] = useState(false);
   const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [voiceConfidence, setVoiceConfidence] = useState<number | undefined>();
@@ -137,11 +132,8 @@ const App: React.FC = () => {
     return tempWake !== settings.wakeUpTime ||
       tempRest !== settings.restTime ||
       tempLang !== settings.language ||
-      JSON.stringify(tempAlarm) !== JSON.stringify(settings.alarm) ||
-      tempLeftHanded !== (settings.isLeftHanded ?? false) ||
-      tempInputMethod !== (settings.primaryInputMethod ?? 'text') ||
-      tempRecoveryOverride !== (settings.recoveryOverride ?? 'auto');
-  }, [tempWake, tempRest, tempLang, tempAlarm, tempLeftHanded, tempInputMethod, tempRecoveryOverride, settings]);
+      JSON.stringify(tempAlarm) !== JSON.stringify(settings.alarm);
+  }, [tempWake, tempRest, tempLang, tempAlarm, settings]);
 
   const isWindDown = useMemo(
     () => getIsWindDown(settings.restTime, currentTime),
@@ -152,13 +144,8 @@ const App: React.FC = () => {
     [settings, currentTime]
   );
   const isRecoveryMode = useMemo(
-    () =>
-      recoveryOverride === 'on'
-        ? true
-        : recoveryOverride === 'off'
-          ? false
-          : getIsRecoveryMode(settings, currentTime, activePeriodId, isWindDown),
-    [settings, currentTime, activePeriodId, isWindDown, recoveryOverride]
+    () => isRecoveryForced || getIsRecoveryMode(settings, currentTime, activePeriodId, isWindDown),
+    [settings, currentTime, activePeriodId, isWindDown, isRecoveryForced]
   );
   // Кольцевой индикатор в Header: доля выполненных задач дня (Figma: «50%»)
   const dayProgress = useMemo(() => {
@@ -340,18 +327,8 @@ const App: React.FC = () => {
   }
 
   function goToToday() {
-    // Тап по заголовку DateNavigator: вернуться к сегодня, оставаясь в режиме.
-    // Раньше уводил в day даже из month/year — отсюда и ощущение «лишнего» заголовка.
-    if (viewMode === 'day') {
-      setViewDate(new Date());
-      return;
-    }
-    setViewDate(() => {
-      const now = new Date();
-      if (viewMode === 'month') return new Date(now.getFullYear(), now.getMonth(), 1);
-      if (viewMode === 'year') return new Date(now.getFullYear(), 0, 1);
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    });
+    setViewDate(new Date());
+    setViewMode('day');
   }
 
   function openTaskSheet() {
@@ -639,7 +616,6 @@ const App: React.FC = () => {
       alarm: tempAlarm,
       isLeftHanded: tempLeftHanded,
       primaryInputMethod: tempInputMethod,
-      recoveryOverride: tempRecoveryOverride,
     });
     setSettingsError(null);
     setShowSettings(false);
@@ -704,8 +680,7 @@ const App: React.FC = () => {
     <ThemeProvider theme={muiTheme}>
       <CssBaseline />
 
-      {/* pb = 88px тулбар + 4px гап до последнего блока (Figma) */}
-      <div className="relative mx-auto min-h-screen max-w-lg px-4 pb-[92px] pt-6">
+      <div className="relative mx-auto min-h-screen max-w-lg px-4 pb-32 pt-6">
         {isAlarmPlaying && (
           <AlarmPlayingModal settings={settings} onStop={stopAlarm} onSnooze={snoozeAlarm} />
         )}
@@ -718,11 +693,7 @@ const App: React.FC = () => {
           isListView={isListView}
           isRecoveryMode={isRecoveryMode}
           onToggleView={() => setIsListView((prev) => !prev)}
-          onToggleRecovery={() => {
-            // Быстрый тап-тоггл: активный Recovery → off, неактивный → on.
-            // Сразу фиксируем в settings, чтобы Header/баннер/настройки совпадали
-            setSettings((prev) => ({ ...prev, recoveryOverride: isRecoveryMode ? 'off' : 'on' }));
-          }}
+          onToggleRecovery={() => setIsRecoveryForced((prev) => !prev)}
         />
 
         <VoiceFeedback
@@ -779,8 +750,7 @@ const App: React.FC = () => {
           language={settings.language}
         />
 
-        {/* Figma: гап между кольцом прогресса и свитчером строго 20px */}
-        <div style={{ marginTop: '20px' }}>
+        <div className="pt-4">
           <ViewSwitcher
             viewMode={viewMode}
             onModeChange={setViewMode}
@@ -788,22 +758,20 @@ const App: React.FC = () => {
           />
         </div>
 
-        {/* Figma-скриншот: свитчер → 20px → DateNavigator (390x44) → 12px → блоки */}
-        <div style={{ marginTop: '20px' }}>
+        {/* Figma-скриншот: свитчер → 30px → DateNavigator (390x44) → 12px → блоки */}
+        <div style={{ marginTop: '30px' }}>
           <DateNavigator
             viewDate={viewDate}
             viewMode={viewMode}
             todayStr={todayStr}
             language={settings.language}
+            isLeftHanded={settings.isLeftHanded}
             onNavigate={navigateDate}
             onToday={goToToday}
           />
         </div>
 
-        <main
-          className="animate-in fade-in duration-500"
-          style={{ marginTop: '12px', paddingInline: '2px' }}
-        >
+        <main className="animate-in fade-in duration-500" style={{ marginTop: '12px' }}>
           {viewMode === 'day' && (
             <DayView
               isRecoveryMode={isRecoveryMode}
@@ -839,11 +807,6 @@ const App: React.FC = () => {
               settings={settings}
               todayStr={todayStr}
               language={settings.language}
-              activePeriodId={activePeriodId}
-              onDayClick={(day) => {
-                setViewDate(day);
-                setViewMode('day');
-              }}
             />
           )}
 
@@ -861,16 +824,7 @@ const App: React.FC = () => {
           )}
 
           {viewMode === 'year' && (
-            <YearView
-              viewDate={viewDate}
-              tasks={tasks}
-              language={settings.language}
-              todayStr={todayStr}
-              onMonthClick={(m) => {
-                setViewDate(new Date(viewDate.getFullYear(), m, 1));
-                setViewMode('month');
-              }}
-            />
+            <YearView viewDate={viewDate} tasks={tasks} language={settings.language} />
           )}
         </main>
 
@@ -895,23 +849,13 @@ const App: React.FC = () => {
             onTempLangChange={setTempLang}
             tempLeftHanded={tempLeftHanded}
             tempInputMethod={tempInputMethod}
-            tempRecoveryOverride={tempRecoveryOverride}
             onTempLeftHandedChange={setTempLeftHanded}
             onTempInputMethodChange={setTempInputMethod}
-            onTempRecoveryOverrideChange={setTempRecoveryOverride}
           />
         )}
 
         <FlowToolbar
-          onSettingsClick={() => {
-            // Каждый раз при открытии настроек подтягиваем актуальные значения:
-            // temp-стейты инициализируются один раз и могут устареть
-            // (например, recoveryOverride изменён листиком в Header)
-            setTempRecoveryOverride(settings.recoveryOverride ?? 'auto');
-            setTempLeftHanded(settings.isLeftHanded ?? false);
-            setTempInputMethod(settings.primaryInputMethod ?? 'text');
-            setShowSettings(true);
-          }}
+          onSettingsClick={() => setShowSettings(true)}
           onIdeasClick={() => setShowIdeas(true)}
           onVoiceClick={toggleVoiceListening}
           onAddTaskClick={openTaskSheet}
