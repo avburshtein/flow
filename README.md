@@ -109,10 +109,9 @@ Everything in Flow derives from two numbers you set once: **wake-up time** and *
 ```
 restTime ──────────────────────────────▶ wakeUpTime
   │            active window           │
-  │  ┌────────────┬────────────┐       │
-  │  │  Morning   │ Afternoon  │       │  Night
-  │  │  1/3 of    │  1/3 of    │ 3/3  │  (recovery,
-  │  │  the day   │  the day   │ Even. │   no capacity)
+  │  ┌────────────┬────────────┐       │  Night
+  │  │  Morning   │ Afternoon  │       │  (recovery,
+  │  │  1/3 of    │  1/3 of    │ 3/3  │   no capacity)
   └──┴────────────┴────────────┴───────┘
 ```
 
@@ -396,9 +395,12 @@ Found something new? Please open an issue with the steps to reproduce, browser, 
 
 ## 📄 License
 
-There is **no `LICENSE` file in the repository yet** — the project is effectively all rights reserved.
-Add a license (MIT is the usual choice for a portfolio-grade open-source release) before publishing the repo
-publicly, and replace the note in this section.
+This project is licensed under the [Apache License 2.0](./LICENSE).
+
+Copyright 2026 avburshtein.
+
+You may use, copy, modify, and distribute the software under the terms of the Apache License 2.0.
+The license includes patent protection and requires preserving copyright and license notices in source distributions.
 
 ## 🌙 Credits
 
@@ -414,7 +416,3 @@ publicly, and replace the note in this section.
 <p align="center">
   Made with ☕️ and circadian science · <a href="README.ru.md">Читать на русском</a>
 </p>
-
-
-
-
