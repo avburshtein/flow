@@ -1,7 +1,7 @@
 import React from 'react';
 import { TimeBlockConfig, TimePeriod, Task, Language } from '../../types.ts';
 import { BLOCK_CAPACITY, TRANSLATIONS } from '../../constants.tsx';
-import TaskItem from '../TaskItem.tsx';
+import TaskCard from '../ui/TaskCard.tsx';
 import BubbleBlock from './BubbleBlock.tsx';
 import { getIcon } from '../../constants.tsx';
 
@@ -183,9 +183,9 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
               onBubbleClick={onToggle}
             />
           ) : (
-            <div className="flex flex-col gap-2 px-4 pb-4 pt-1">
+            <div role="list" className="flex flex-col px-4 pb-4 pt-1" style={{ gap: '12px' }}>
               {tasks.map(task => (
-                <TaskItem
+                <TaskCard
                   key={task.id}
                   task={task}
                   lang={language}

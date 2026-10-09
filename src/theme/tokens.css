@@ -275,6 +275,11 @@
   --flow-weight-deep-color-rgb: 234 221 255;
   --flow-weight-deep-on-color: #4E3D75;
   --flow-weight-deep-on-color-rgb: 78 61 117;
+  /* Task cards (Figma 98:15937): stroke-обводка карточки по весу.
+     Light-значения — из спеки: quick #256a4b, focused #79590c, deep #67558e. */
+  --flow-weight-quick-stroke: #256A4B;
+  --flow-weight-focused-stroke: #79590C;
+  --flow-weight-deep-stroke: #67558E;
 
   /* ── Flow Custom: Week View (Light) ── */
   /* Leading-квадратик дня = GitHub-heat-map по легенде Year View:
@@ -487,6 +492,10 @@
   --flow-weight-deep-color-rgb: 179 136 255;
   --flow-weight-deep-on-color: #37265C;
   --flow-weight-deep-on-color-rgb: 55 38 92;
+  /* Task cards: в dark обводка = weight-on (светлый контур на тёмном). */
+  --flow-weight-quick-stroke: #90D5AE;
+  --flow-weight-focused-stroke: #ECC06C;
+  --flow-weight-deep-stroke: #B388FF;
 
   /* ── Flow Custom: Week View (Dark) ── */
   /* Те же 4 градации, альфа поднята для тёмного фона */

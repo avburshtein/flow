@@ -340,8 +340,18 @@ const App: React.FC = () => {
   }
 
   function goToToday() {
-    setViewDate(new Date());
-    setViewMode('day');
+    // Тап по заголовку DateNavigator: вернуться к сегодня, оставаясь в режиме.
+    // Раньше уводил в day даже из month/year — отсюда и ощущение «лишнего» заголовка.
+    if (viewMode === 'day') {
+      setViewDate(new Date());
+      return;
+    }
+    setViewDate(() => {
+      const now = new Date();
+      if (viewMode === 'month') return new Date(now.getFullYear(), now.getMonth(), 1);
+      if (viewMode === 'year') return new Date(now.getFullYear(), 0, 1);
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    });
   }
 
   function openTaskSheet() {
@@ -851,7 +861,16 @@ const App: React.FC = () => {
           )}
 
           {viewMode === 'year' && (
-            <YearView viewDate={viewDate} tasks={tasks} language={settings.language} />
+            <YearView
+              viewDate={viewDate}
+              tasks={tasks}
+              language={settings.language}
+              todayStr={todayStr}
+              onMonthClick={(m) => {
+                setViewDate(new Date(viewDate.getFullYear(), m, 1));
+                setViewMode('month');
+              }}
+            />
           )}
         </main>
 
