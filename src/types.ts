@@ -51,6 +51,7 @@ export interface Task {
   originalPeriod?: TimePeriod;
   priority: Priority;
   weight: TaskWeight;
+  icon?: string;
   notes?: string;
   dueDate?: string;
   recurrence?: Recurrence;

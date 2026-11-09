@@ -21,6 +21,7 @@ interface TimeBlockProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
+  onEditTask?: (task: Task) => void;
   language: Language;
   viewMode?: 'grid' | 'vertical';
 }
@@ -39,6 +40,7 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
   onToggle,
   onDelete,
   onUpdate,
+  onEditTask,
   language,
   viewMode = 'grid',
 }) => {
@@ -192,6 +194,7 @@ const TimeBlock: React.FC<TimeBlockProps> = ({
                   onToggle={onToggle}
                   onDelete={onDelete}
                   onUpdate={onUpdate}
+                  onEditTask={onEditTask}
                 />
               ))}
             </div>

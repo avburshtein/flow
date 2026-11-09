@@ -35,7 +35,7 @@ import DayView from './components/views/DayView.tsx';
 import WeekView from './components/views/WeekView.tsx';
 import MonthView from './components/views/MonthView.tsx';
 import YearView from './components/views/YearView.tsx';
-import SettingsModal from './components/modals/SettingsModal.tsx';
+import SettingsSideSheet from './components/modals/SettingsSideSheet.tsx';
 import AlarmPlayingModal from './components/modals/AlarmPlayingModal.tsx';
 import VoiceConfirmDialog from './components/modals/VoiceConfirmDialog.tsx';
 import { VoiceControlService } from './services/voice/VoiceControlService.ts';
@@ -92,6 +92,8 @@ const App: React.FC = () => {
   const [isDarkTheme, setIsDarkTheme] = useState(() => localStorage.getItem('flow_theme') === 'dark');
   const [isListView, setIsListView] = useState(false);
   const [isTaskSheetOpen, setIsTaskSheetOpen] = useState(false);
+  // Задача в режиме редактирования (null = режим добавления).
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [collapsedBlocks, setCollapsedBlocks] = useState<Record<string, boolean>>({});
   const [selectedPeriods, setSelectedPeriods] = useState<TimePeriod[]>([TimePeriod.MORNING]);
   const [selectedRecurrence, setSelectedRecurrence] = useState<Recurrence>('none');
@@ -101,6 +103,7 @@ const App: React.FC = () => {
   const [tempAlarm, setTempAlarm] = useState<AlarmConfig>(settings.alarm);
   const [tempLeftHanded, setTempLeftHanded] = useState<boolean>(settings.isLeftHanded ?? false);
   const [tempInputMethod, setTempInputMethod] = useState<PrimaryInputMethod>(settings.primaryInputMethod ?? 'text');
+  const [tempRecoveryOverride, setTempRecoveryOverride] = useState<'auto' | 'on' | 'off'>(settings.recoveryOverride ?? 'auto');
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [capacityNotification, setCapacityNotification] = useState<CapacityNotification | null>(null);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(() =>
@@ -132,8 +135,9 @@ const App: React.FC = () => {
     return tempWake !== settings.wakeUpTime ||
       tempRest !== settings.restTime ||
       tempLang !== settings.language ||
-      JSON.stringify(tempAlarm) !== JSON.stringify(settings.alarm);
-  }, [tempWake, tempRest, tempLang, tempAlarm, settings]);
+      JSON.stringify(tempAlarm) !== JSON.stringify(settings.alarm) ||
+      tempRecoveryOverride !== (settings.recoveryOverride ?? 'auto');
+  }, [tempWake, tempRest, tempLang, tempAlarm, tempRecoveryOverride, settings]);
 
   const isWindDown = useMemo(
     () => getIsWindDown(settings.restTime, currentTime),
@@ -335,6 +339,15 @@ const App: React.FC = () => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
+    setEditingTask(null);
+    setIsTaskSheetOpen(true);
+  }
+
+  function openEditTaskSheet(task: Task) {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    setEditingTask(task);
     setIsTaskSheetOpen(true);
   }
 
@@ -616,6 +629,7 @@ const App: React.FC = () => {
       alarm: tempAlarm,
       isLeftHanded: tempLeftHanded,
       primaryInputMethod: tempInputMethod,
+      recoveryOverride: tempRecoveryOverride,
     });
     setSettingsError(null);
     setShowSettings(false);
@@ -786,8 +800,12 @@ const App: React.FC = () => {
               collapsedBlocks={collapsedBlocks}
               language={settings.language}
               isTaskSheetOpen={isTaskSheetOpen}
-              onCloseTaskSheet={() => setIsTaskSheetOpen(false)}
+              onCloseTaskSheet={() => { setEditingTask(null); setIsTaskSheetOpen(false); }}
               onTaskAdd={handleTaskAdd}
+              editingTask={editingTask}
+              onTaskUpdate={updateTask}
+              onTaskDelete={deleteTask}
+              onEditTask={openEditTaskSheet}
               onQuickAdd={handleQuickAdd}
               onToggle={toggleTask}
               onDelete={deleteTask}
@@ -829,7 +847,7 @@ const App: React.FC = () => {
         </main>
 
         {showSettings && (
-          <SettingsModal
+          <SettingsSideSheet
             settings={settings}
             isDarkTheme={isDarkTheme}
             onToggleTheme={() => setIsDarkTheme((prev) => !prev)}
@@ -837,6 +855,9 @@ const App: React.FC = () => {
             tempRest={tempRest}
             tempLang={tempLang}
             tempAlarm={tempAlarm}
+            tempLeftHanded={tempLeftHanded}
+            tempInputMethod={tempInputMethod}
+            tempRecoveryOverride={tempRecoveryOverride}
             isDirty={isSettingsDirty}
             error={settingsError}
             voiceSettings={voiceSettings}
@@ -847,10 +868,9 @@ const App: React.FC = () => {
             onTempWakeChange={setTempWake}
             onTempRestChange={setTempRest}
             onTempLangChange={setTempLang}
-            tempLeftHanded={tempLeftHanded}
-            tempInputMethod={tempInputMethod}
             onTempLeftHandedChange={setTempLeftHanded}
             onTempInputMethodChange={setTempInputMethod}
+            onTempRecoveryOverrideChange={setTempRecoveryOverride}
           />
         )}
 

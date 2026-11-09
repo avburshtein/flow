@@ -19,6 +19,11 @@ interface DayViewProps {
   isTaskSheetOpen?: boolean;
   onCloseTaskSheet?: () => void;
   onTaskAdd: (task: Omit<Task, 'id' | 'createdAt' | 'completed'>) => void;
+  // Режим редактирования задачи (проброс в TaskSheet).
+  editingTask?: Task | null;
+  onTaskUpdate?: (id: string, updates: Partial<Task>) => void;
+  onTaskDelete?: (id: string) => void;
+  onEditTask?: (task: Task) => void;
   onQuickAdd: (period: TimePeriod) => void;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
@@ -43,6 +48,10 @@ const DayView: React.FC<DayViewProps> = ({
   isTaskSheetOpen = false,
   onCloseTaskSheet,
   onTaskAdd,
+  editingTask = null,
+  onTaskUpdate,
+  onTaskDelete,
+  onEditTask,
   onQuickAdd,
   onToggle,
   onDelete,
@@ -80,6 +89,7 @@ const DayView: React.FC<DayViewProps> = ({
         onToggle={onToggle}
         onDelete={onDelete}
         onUpdate={onUpdate}
+        onEditTask={onEditTask}
         onToggleCollapse={onToggleCollapse}
       />
 
@@ -87,6 +97,9 @@ const DayView: React.FC<DayViewProps> = ({
         isOpen={isTaskSheetOpen}
         onClose={onCloseTaskSheet || (() => { })}
         onTaskAdd={onTaskAdd}
+        editingTask={editingTask}
+        onTaskUpdate={onTaskUpdate}
+        onTaskDelete={onTaskDelete}
         activePeriodId={activePeriodId}
         tasks={tasks}
         currentTime={currentTime}

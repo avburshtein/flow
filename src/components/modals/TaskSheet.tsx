@@ -14,9 +14,18 @@ import {
     Star,
     Repeat,
     Check,
+    Trash2,
+    Save,
 } from 'lucide-react';
 import { suggestWeight, adjustTaskPeriods } from '../../services/taskOptimizer';
-import { suggestIcon } from '../../services/iconSuggester';
+import {
+    suggestIcon,
+    TASK_ICON_NAMES,
+    getTaskIconByName,
+    suggestIconName,
+    DEFAULT_TASK_ICON,
+} from '../../services/iconSuggester';
+import { WEIGHT_CONFIG } from '../../constants';
 import {
     TimePeriod,
     TaskWeight,
@@ -30,6 +39,10 @@ interface TaskSheetProps {
     isOpen: boolean;
     onClose: () => void;
     onTaskAdd: (task: Omit<Task, 'id' | 'createdAt' | 'completed'>) => void;
+    // Режим редактирования: если передан — шит открывается в режиме edit.
+    editingTask?: Task | null;
+    onTaskUpdate?: (id: string, updates: Partial<Task>) => void;
+    onTaskDelete?: (id: string) => void;
     activePeriodId: TimePeriod;
     tasks: Task[];
     currentTime: Date;
@@ -40,41 +53,76 @@ export default function TaskSheet({
     isOpen,
     onClose,
     onTaskAdd,
+    editingTask = null,
+    onTaskUpdate,
+    onTaskDelete,
     activePeriodId,
     tasks,
     currentTime,
     language,
 }: TaskSheetProps) {
+    const isEditMode = Boolean(editingTask);
     const [title, setTitle] = useState('');
     const [selectedWeight, setSelectedWeight] = useState<TaskWeight>(TaskWeight.focused);
     const [selectedPriority, setSelectedPriority] = useState<Priority>('medium');
     const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>(activePeriodId);
     const [selectedRecurrence, setSelectedRecurrence] = useState<Recurrence>('none');
+    const [selectedIcon, setSelectedIcon] = useState<string>(DEFAULT_TASK_ICON);
     const [isAutoSelected, setIsAutoSelected] = useState(true);
+    // Пока true (и пользователь не выбрал иконку вручную) — иконка следует
+    // авто-подбору по названию. Ручной выбор фиксирует её.
+    const [isIconAuto, setIsIconAuto] = useState(true);
     const [titleError, setTitleError] = useState<string | null>(null);
     const [recurrenceAnchor, setRecurrenceAnchor] = useState<HTMLElement | null>(null);
+    const [iconAnchor, setIconAnchor] = useState<HTMLElement | null>(null);
 
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Auto-suggest weight
+    // Auto-suggest weight — только в режиме добавления (в edit вес фиксирован).
     useEffect(() => {
+        if (isEditMode) return;
         if (title.trim()) {
             setSelectedWeight(suggestWeight(title));
         }
-    }, [title]);
+    }, [title, isEditMode]);
 
-    // Reset + focus on open
+    // Авто-подбор иконки по названию (add-режим), пока пользователь не выбрал
+    // иконку вручную. В edit иконка фиксирована (prefill).
     useEffect(() => {
-        if (isOpen) {
+        if (isEditMode || !isIconAuto) return;
+        if (title.trim()) {
+            setSelectedIcon(suggestIconName(title));
+        }
+    }, [title, isEditMode, isIconAuto]);
+
+    // Reset (add) или prefill (edit) + фокус на открытии.
+    useEffect(() => {
+        if (!isOpen) return;
+        if (editingTask) {
+            setTitle(editingTask.title);
+            setSelectedWeight(editingTask.weight);
+            setSelectedPriority(editingTask.priority);
+            setSelectedPeriod(editingTask.periods[0] ?? activePeriodId);
+            setSelectedRecurrence(editingTask.recurrence ?? 'none');
+            setSelectedIcon(editingTask.icon ?? suggestIconName(editingTask.title));
+            setIsIconAuto(false);
+            setIsAutoSelected(false);
+            setTitleError(null);
+        } else {
             setTitle('');
             setSelectedWeight(TaskWeight.focused);
             setSelectedPriority('medium');
             setSelectedPeriod(activePeriodId);
             setSelectedRecurrence('none');
+            setSelectedIcon(DEFAULT_TASK_ICON);
+            setIsIconAuto(true);
             setIsAutoSelected(true);
             setTitleError(null);
-            requestAnimationFrame(() => inputRef.current?.focus());
         }
+        requestAnimationFrame(() => inputRef.current?.focus());
+        // editingTask намеренно не в deps: prefill должен отрабатывать один раз
+        // на открытии, а не на каждый ре-рендер родителя.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, activePeriodId]);
 
     const releaseFocus = () => {
@@ -107,12 +155,27 @@ export default function TaskSheet({
             return;
         }
 
+        releaseFocus();
+
+        // Режим редактирования — обновляем существующую задачу.
+        if (isEditMode && editingTask) {
+            onTaskUpdate?.(editingTask.id, {
+                title: trimmed,
+                weight: selectedWeight,
+                priority: selectedPriority,
+                periods: [selectedPeriod],
+                recurrence: selectedRecurrence,
+                icon: selectedIcon,
+            });
+            handleClose();
+            return;
+        }
+
         const todayStr = currentTime.toISOString().split('T')[0];
         const adjustment = adjustTaskPeriods(
             tasks, [selectedPeriod], todayStr, selectedWeight, activePeriodId, currentTime
         );
 
-        releaseFocus();
         onTaskAdd({
             title: trimmed,
             periods: adjustment.periods,
@@ -120,7 +183,15 @@ export default function TaskSheet({
             weight: selectedWeight,
             priority: selectedPriority,
             recurrence: selectedRecurrence,
+            icon: selectedIcon,
         });
+        handleClose();
+    };
+
+    const handleDelete = () => {
+        if (!editingTask) return;
+        releaseFocus();
+        onTaskDelete?.(editingTask.id);
         handleClose();
     };
 
@@ -145,6 +216,8 @@ export default function TaskSheet({
             recurrence: 'Set recurrence', once: 'Once', daily: 'Every day',
             weekly: 'Every week', monthly: 'Every month', allBlocks: 'All active blocks',
             chooseDates: 'Choose dates...',
+            editTask: 'Edit Task', saveTask: 'Save task', deleteTask: 'Delete task',
+            selectIcon: 'Icon', iconAuto: 'Auto',
         },
         ru: {
             newTask: 'Новая задача', taskName: 'Название задачи...', weight: 'Вес',
@@ -153,6 +226,8 @@ export default function TaskSheet({
             recurrence: 'Настроить повтор', once: 'Один раз', daily: 'Каждый день',
             weekly: 'Каждую неделю', monthly: 'Каждый месяц', allBlocks: 'Все активные блоки',
             chooseDates: 'Выбрать даты...',
+            editTask: 'Редактировать', saveTask: 'Сохранить задачу', deleteTask: 'Удалить задачу',
+            selectIcon: 'Иконка', iconAuto: 'Авто',
         },
         es: {
             newTask: 'Nueva Tarea', taskName: 'Nombre de tarea...', weight: 'Peso',
@@ -161,6 +236,8 @@ export default function TaskSheet({
             recurrence: 'Configurar repetición', once: 'Una vez', daily: 'Cada día',
             weekly: 'Cada semana', monthly: 'Cada mes', allBlocks: 'Todos los bloques',
             chooseDates: 'Elegir fechas...',
+            editTask: 'Editar Tarea', saveTask: 'Guardar tarea', deleteTask: 'Eliminar tarea',
+            selectIcon: 'Icono', iconAuto: 'Auto',
         },
     }[language] || {
         newTask: 'New Task', taskName: 'Task name...', weight: 'Weight',
@@ -169,6 +246,8 @@ export default function TaskSheet({
         recurrence: 'Set recurrence', once: 'Once', daily: 'Every day',
         weekly: 'Every week', monthly: 'Every month', allBlocks: 'All active blocks',
         chooseDates: 'Choose dates...',
+        editTask: 'Edit Task', saveTask: 'Save task', deleteTask: 'Delete task',
+        selectIcon: 'Icon', iconAuto: 'Auto',
     };
 
     const priorityIcons: Record<Priority, React.ElementType> = { low: Circle, medium: Diamond, high: Star };
@@ -188,6 +267,35 @@ export default function TaskSheet({
     const recurrenceLabels: Record<Recurrence, string> = {
         none: t.once, daily: t.daily, weekly: t.weekly, monthly: t.monthly, 'all-blocks': t.allBlocks,
     };
+
+    // Иконка текущей задачи для цветного хедера (реагирует на выбор веса/иконки).
+    const HeaderIcon = getTaskIconByName(selectedIcon);
+
+    // Цвета хедера по весу (Figma ноды 424:17088 / 458:16379 / 458:16380):
+    //   Top bar = вес@16%, labale = вес@25%, контент (текст+иконка) = вес-on.
+    // Меняются мгновенно при смене selectedWeight (реактивный цвет хедера).
+    const weightHeader = {
+        [TaskWeight.quick]: {
+            bg16: 'color-mix(in srgb, var(--flow-weight-quick-color) 16%, transparent)',
+            bg25: 'color-mix(in srgb, var(--flow-weight-quick-color) 25%, transparent)',
+            full: 'var(--flow-weight-quick-color)',
+            on: 'var(--flow-weight-quick-on-color)',
+        },
+        [TaskWeight.focused]: {
+            bg16: 'color-mix(in srgb, var(--flow-weight-focused-color) 16%, transparent)',
+            bg25: 'color-mix(in srgb, var(--flow-weight-focused-color) 25%, transparent)',
+            full: 'var(--flow-weight-focused-color)',
+            on: 'var(--flow-weight-focused-on-color)',
+        },
+        [TaskWeight.deep]: {
+            bg16: 'color-mix(in srgb, var(--flow-weight-deep-color) 16%, transparent)',
+            bg25: 'color-mix(in srgb, var(--flow-weight-deep-color) 25%, transparent)',
+            full: 'var(--flow-weight-deep-color)',
+            on: 'var(--flow-weight-deep-on-color)',
+        },
+    }[selectedWeight];
+    // Заголовок хедера = название веса (как в Figma: quick/focused/deep).
+    const weightHeaderLabel = WEIGHT_CONFIG[selectedWeight].label;
 
     // ─── Title Small — M3 token, NO uppercase ───
     const titleSmallSx = {
@@ -234,61 +342,105 @@ export default function TaskSheet({
                     gap: '16px',
                 }}
             >
-                {/* Drag handle */}
+                {/* Цветной хедер (Figma ноды 424:17088/458:16379/458:16380):
+                    Top bar — вес@16%, внутри labale — вес@25% с заголовком
+                    веса слева и иконкой задачи справа (цвет вес-on). Весь
+                    блок реактивно меняет цвет при смене выбранного веса. */}
                 <Box
                     sx={{
-                        width: '32px',
-                        height: '4px',
-                        borderRadius: '9999px',
-                        bgcolor: 'var(--md-sys-color-on-surface-variant)',
-                        opacity: 0.4,
-                        mx: 'auto',
+                        // Растягиваем хедер на всю ширину карточки шита,
+                        // гася боковые паддинги контейнера (24px), чтобы
+                        // фон Top bar шёл от края до края, как в Figma.
+                        mx: '-24px',
+                        mt: '-24px',
+                        mb: '4px',
+                        bgcolor: weightHeader.bg16,
                         flexShrink: 0,
                     }}
-                />
-
-                {/* Title — Title Large */}
-                <Typography
-                    sx={{
-                        fontSize: '22px',
-                        fontWeight: 500,
-                        lineHeight: '28px',
-                        letterSpacing: '0px',
-                        color: 'var(--md-sys-color-on-surface)',
-                        fontFamily: 'var(--md-sys-typescale-title-large-font)',
-                    }}
                 >
-                    {t.newTask}
-                </Typography>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            height: '56px',
+                            px: '24px',
+                            bgcolor: weightHeader.bg25,
+                        }}
+                    >
+                        <Typography
+                            sx={{
+                                fontSize: '22px',
+                                fontWeight: 500,
+                                lineHeight: '28px',
+                                letterSpacing: '0px',
+                                fontFamily: 'var(--md-sys-typescale-title-large-font)',
+                                color: weightHeader.on,
+                            }}
+                        >
+                            {weightHeaderLabel}
+                        </Typography>
+                        <HeaderIcon
+                            aria-hidden="true"
+                            size={24}
+                            color={weightHeader.on}
+                        />
+                    </Box>
+                </Box>
 
                 {/* M3 Outlined TextField */}
                 <Box>
                     <Box
                         sx={{
+                            // M3 Outlined TextField: малый радиус 4, обводка `outline`,
+                            // плавающий лейбл (`Label text`) сидит на верхней борде и
+                            // «пробивает» её непрозрачной подложкой под цвет поля.
+                            position: 'relative',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
                             px: '12px',
                             height: '56px',
                             bgcolor: 'var(--md-sys-color-surface-container-low)',
-                            borderRadius: '16px',
-                            border: '1px solid var(--md-sys-color-outline-variant)',
-                            transition: 'border-color 200ms ease, border-width 200ms ease, padding 200ms ease',
+                            borderRadius: '4px',
+                            border: '1px solid var(--md-sys-color-outline)',
+                            transition: 'border-color 200ms ease, border-width 200ms ease',
                             '&:focus-within': {
                                 borderColor: 'var(--md-sys-color-primary)',
                                 borderWidth: '2px',
-                                px: '11px',
                             },
-                            '&:hover:not(:focus-within)': {
-                                borderColor: 'var(--md-sys-color-on-surface)',
-                                opacity: 0.87,
+                            // Цвет лейбла при фокусе — primary (геометрию/фон задаёт
+                            // инлайн-стиль лейбла, здесь только перекраска).
+                            '&:focus-within .tf-label': {
+                                color: 'var(--md-sys-color-primary)',
                             },
                         }}
                     >
+                        <label
+                            htmlFor="task-title-input"
+                            className="tf-label"
+                            style={{
+                                position: 'absolute',
+                                left: '12px',
+                                top: title ? '-8px' : '50%',
+                                transform: title ? 'none' : 'translateY(-50%)',
+                                padding: '0 4px',
+                                background: 'var(--md-sys-color-surface-container-low)',
+                                fontSize: title ? '12px' : '16px',
+                                fontWeight: 500,
+                                lineHeight: title ? '16px' : '24px',
+                                color: 'var(--md-sys-color-outline)',
+                                transition: 'top 150ms ease, font-size 150ms ease, color 150ms ease',
+                                pointerEvents: 'none',
+                                fontFamily: 'var(--md-sys-typescale-body-large-font)',
+                            }}
+                        >
+                            {t.taskName}
+                        </label>
                         <input
+                            id="task-title-input"
                             ref={inputRef}
                             type="text"
-                            placeholder={t.taskName}
                             value={title}
                             onChange={(e) => {
                                 setTitle(e.target.value);
@@ -296,6 +448,7 @@ export default function TaskSheet({
                             }}
                             style={{
                                 flex: 1,
+                                minWidth: 0,
                                 background: 'transparent',
                                 border: 'none',
                                 outline: 'none',
@@ -515,17 +668,15 @@ export default function TaskSheet({
                                     fontWeight: 600,
                                 },
                             },
-                            '& .MuiToggleButton-root[value="MORNING"].Mui-selected': {
-                                bgcolor: 'var(--flow-block-morning)',
-                                color: 'var(--flow-block-morning-on-color)',
-                            },
-                            '& .MuiToggleButton-root[value="AFTERNOON"].Mui-selected': {
-                                bgcolor: 'var(--flow-block-afternoon)',
-                                color: 'var(--flow-block-afternoon-on-color)',
-                            },
-                            '& .MuiToggleButton-root[value="EVENING"].Mui-selected': {
-                                bgcolor: 'var(--flow-block-evening)',
-                                color: 'var(--flow-block-evening-on-color)',
+                            // Figma: выбранный сегмент периода = secondary-container
+                            // (#e9ddff / #4d3d75) — единый M3 selected-паттерн,
+                            // «как у остальных» сегментов. Навешиваем на класс
+                            // .Mui-selected (без атрибута value) — матчится всегда,
+                            // независимо от регистра значения. Прежние селекторы по
+                            // circadian-цветам не давали стабильного selected-чипа.
+                            '& .MuiToggleButton-root.Mui-selected': {
+                                bgcolor: 'var(--md-sys-color-secondary-container)',
+                                color: 'var(--md-sys-color-on-secondary-container)',
                             },
                         }}
                     >
@@ -544,60 +695,182 @@ export default function TaskSheet({
                                         fontWeight: 'var(--md-sys-typescale-label-small-weight)',
                                         lineHeight: 'var(--md-sys-typescale-label-small-line-height)',
                                         letterSpacing: 'var(--md-sys-typescale-label-small-letter-spacing)',
-                                        color: `var(--flow-block-${period.toLowerCase()}-on-color)`,
-                                        opacity: isAutoSelected && selectedPeriod === period ? 0.6 : 0,
+                                        // Figma supporting-text: #4a454e =
+                                        // `on-surface-variant` — не очень насыщенный,
+                                        // но читаемый (мин. порог контраста на светлом фоне).
+                                        // Прежний `flow-block-*-on-color` в ряде тем давал
+                                        // белый/неконтрастный текст.
+                                        color: 'var(--md-sys-color-on-surface-variant)',
+                                        // Маркер «currently active» всегда под кнопкой
+                                        // РЕАЛЬНО текущего периода суток (activePeriodId),
+                                        // независимо от выбора пользователя. Раньше зависел
+                                        // от isAutoSelected — гас при клике по блоку дня.
+                                        opacity: activePeriodId === period ? 1 : 0,
                                         transition: 'opacity 200ms',
                                     }}
                                 >
-                                    {isAutoSelected && selectedPeriod === period ? t.currentlyActive : ''}
+                                    {activePeriodId === period ? t.currentlyActive : ''}
                                 </Typography>
                             </Box>
                         ))}
                     </Box>
                 </Box>
 
-                {/* Filled Button — custom disabled to keep primary color visible */}
-                <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={handleSubmit}
-                    disabled={!title.trim()}
-                    sx={{
-                        minHeight: '52px',
-                        borderRadius: '9999px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        textTransform: 'none',
-                        bgcolor: 'var(--md-sys-color-primary)',
-                        color: 'var(--md-sys-color-on-primary)',
-                        '&:hover': { opacity: 0.9 },
-                        '&.Mui-disabled': {
-                            bgcolor: 'var(--md-sys-color-primary)',
-                            color: 'var(--md-sys-color-on-primary)',
-                            opacity: 0.6,
+                {/* Icon Selector (Figma: "Select an icon for the task" +
+                    tonal icon-button с текущей иконкой; фон = цвет веса). */}
+                <Box>
+                    <Typography sx={titleSmallSx}>{t.selectIcon}</Typography>
+                    <IconButton
+                        onClick={(e) => setIconAnchor(e.currentTarget)}
+                        aria-label={t.selectIcon}
+                        sx={{
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '16px',
+                            bgcolor: weightHeader.full,
+                            color: weightHeader.on,
+                            '&:hover': { opacity: 0.9 },
+                        }}
+                    >
+                        <HeaderIcon size={24} />
+                    </IconButton>
+                </Box>
+
+                {/* Icon picker — сетка всех доступных иконок задачи. */}
+                <Menu
+                    anchorEl={iconAnchor}
+                    open={Boolean(iconAnchor)}
+                    onClose={() => setIconAnchor(null)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+                    transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                maxHeight: '320px',
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(4, 56px)',
+                                gap: '4px',
+                                p: '8px',
+                            },
                         },
                     }}
                 >
-                    {t.addTask}
-                </Button>
+                    {TASK_ICON_NAMES.map((name) => {
+                        const IconCmp = getTaskIconByName(name);
+                        return (
+                            <MenuItem
+                                key={name}
+                                selected={name === selectedIcon}
+                                onClick={() => {
+                                    setSelectedIcon(name);
+                                    setIsIconAuto(false);
+                                    setIconAnchor(null);
+                                }}
+                                sx={{
+                                    justifyContent: 'center',
+                                    borderRadius: '12px',
+                                    minWidth: 0,
+                                    px: 0,
+                                }}
+                            >
+                                <IconCmp size={22} />
+                            </MenuItem>
+                        );
+                    })}
+                </Menu>
 
-                {/* Text Button (Cancel) */}
-                <Button
-                    variant="text"
-                    onClick={handleClose}
-                    sx={{
-                        display: 'block',
-                        mx: 'auto',
-                        minHeight: '44px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        color: 'var(--md-sys-color-on-surface-variant)',
-                        textTransform: 'none',
-                        '&:hover': { bgcolor: 'transparent', opacity: 0.8 },
-                    }}
-                >
-                    {t.cancel}
-                </Button>
+                {/* Buttons:
+                    edit — «Сохранить задачу» (filled) + «Удалить» (text);
+                    add  — «Добавить задачу» (filled) + «Отмена» (text). */}
+                {isEditMode ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Button
+                            variant="contained"
+                            onClick={handleSubmit}
+                            disabled={!title.trim()}
+                            startIcon={<Save size={20} />}
+                            sx={{
+                                flex: 1,
+                                minHeight: '52px',
+                                borderRadius: '9999px',
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                textTransform: 'none',
+                                bgcolor: 'var(--md-sys-color-primary)',
+                                color: 'var(--md-sys-color-on-primary)',
+                                '&:hover': { opacity: 0.9 },
+                                '&.Mui-disabled': {
+                                    bgcolor: 'var(--md-sys-color-primary)',
+                                    color: 'var(--md-sys-color-on-primary)',
+                                    opacity: 0.6,
+                                },
+                            }}
+                        >
+                            {t.saveTask}
+                        </Button>
+                        <Button
+                            variant="text"
+                            onClick={handleDelete}
+                            startIcon={<Trash2 size={20} />}
+                            sx={{
+                                minHeight: '52px',
+                                borderRadius: '9999px',
+                                px: '16px',
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                textTransform: 'none',
+                                color: 'var(--md-sys-color-on-surface-variant)',
+                                '&:hover': { bgcolor: 'transparent', opacity: 0.8 },
+                            }}
+                        >
+                            {t.deleteTask}
+                        </Button>
+                    </Box>
+                ) : (
+                    <>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            onClick={handleSubmit}
+                            disabled={!title.trim()}
+                            sx={{
+                                minHeight: '52px',
+                                borderRadius: '9999px',
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                textTransform: 'none',
+                                bgcolor: 'var(--md-sys-color-primary)',
+                                color: 'var(--md-sys-color-on-primary)',
+                                '&:hover': { opacity: 0.9 },
+                                '&.Mui-disabled': {
+                                    bgcolor: 'var(--md-sys-color-primary)',
+                                    color: 'var(--md-sys-color-on-primary)',
+                                    opacity: 0.6,
+                                },
+                            }}
+                        >
+                            {t.addTask}
+                        </Button>
+
+                        {/* Text Button (Cancel) */}
+                        <Button
+                            variant="text"
+                            onClick={handleClose}
+                            sx={{
+                                display: 'block',
+                                mx: 'auto',
+                                minHeight: '44px',
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                color: 'var(--md-sys-color-on-surface-variant)',
+                                textTransform: 'none',
+                                '&:hover': { bgcolor: 'transparent', opacity: 0.8 },
+                            }}
+                        >
+                            {t.cancel}
+                        </Button>
+                    </>
+                )}
             </Box>
         </SwipeableDrawer>
     );

@@ -22,6 +22,7 @@ interface TimeBlockListProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Task>) => void;
+  onEditTask?: (task: Task) => void;
   onToggleCollapse: (blockId: string) => void;
 }
 
@@ -39,6 +40,7 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
   onToggle,
   onDelete,
   onUpdate,
+  onEditTask,
   onToggleCollapse
 }) => {
   const dateStr = viewDate.toISOString().split('T')[0];
@@ -89,6 +91,7 @@ const TimeBlockList: React.FC<TimeBlockListProps> = ({
             onToggle={onToggle}
             onDelete={onDelete}
             onUpdate={onUpdate}
+            onEditTask={onEditTask}
             language={language}
             viewMode={isListView ? 'vertical' : 'grid'}
           />
