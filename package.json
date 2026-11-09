@@ -21,6 +21,7 @@
     "react-stately": "^3.46.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.13",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.5.0",
