@@ -28,4 +28,5 @@ dist-ssr
 .env.*
 !.env.example
 
-docs\Case_Portfolio
+# Portfolio case working materials — keep local only
+docs/Case_Portfolio/
