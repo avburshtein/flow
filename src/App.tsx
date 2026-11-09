@@ -931,7 +931,6 @@ const App: React.FC = () => {
                         viewMode={viewMode}
                         todayStr={todayStr}
                         language={settings.language}
-                        isLeftHanded={settings.isLeftHanded}
                         onNavigate={navigateDate}
                         onToday={goToToday}
                     />
@@ -1010,6 +1009,11 @@ const App: React.FC = () => {
                             viewDate={viewDate}
                             tasks={tasks}
                             language={settings.language}
+                            todayStr={todayStr}
+                            onMonthClick={(month) => {
+                                setViewDate(new Date(viewDate.getFullYear(), month, 1));
+                                setViewMode('month');
+                            }}
                         />
                     )}
                 </main>
