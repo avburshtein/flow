@@ -329,7 +329,8 @@ flow/
 | [`docs/state-management.md`](docs/state-management.md) | Правила состояния и взаимодействия (включая то, что **не** реализовано) |
 | [`docs/gestures-motion.md`](docs/gestures-motion.md) | Режим левши и эргономика — будущая спека |
 | [`docs/ai-manifesto.md`](docs/ai-manifesto.md) | Зачем существует Flow: продуктовая философия |
-| [`docs/CURRENT/DEFINE.md`](docs/CURRENT/DEFINE.md) | Исследование (n=99, RU/EN/ES), персоны, метрики успеха |
+| [`docs/CURRENT/DEFINE-final-n166.md`](docs/CURRENT/DEFINE-final-n166.md) | Финальное исследование (n=166, RU/EN/ES), affinity mapping, персоны и HMW; [первичный Define n=99](docs/CURRENT/DEFINE.md) сохранён как история |
+| [`docs/CURRENT/research/`](docs/CURRENT/research/README.md) | Protocol v1, кодбук, XLSX-анализатор без зависимостей и воспроизводимые агрегаты early-99 / late-67 / full-166 |
 | [`docs/components/`](docs/components) | Спеки компонентов: `TimeBlock`, `TaskSheet`, `Task indicator` |
 | [`docs/figma/`](docs/figma) | Экспорт токенов в Figma (переменные светлой/тёмной темы, master spec) |
 | [`docs/specs/`](docs/specs) | Будущие спеки: energy peak planner, audio neural engine, audio events |
@@ -411,7 +412,7 @@ flow/
 - **Inter** (Rasmus Andersson) — SIL Open Font License 1.1.
 - **Web Speech API** — распознавание и синтез речи прямо в браузере.
 - Эмбиент-звуки будильника — любезно предоставлены [Mixkit](https://mixkit.co/free-sound-effects/).
-- Продуктовые решения опираются на исследование (n=99) из [`docs/CURRENT/DEFINE.md`](docs/CURRENT/DEFINE.md).
+- Раннее прототипирование и dogfooding предшествовали опросу. Последующее исследование проверяет релевантность проблемы за пределами личного опыта и уточняет текущие гипотезы, но не доказывает эффективность продукта. Финальный синтез n=166 — в [`docs/CURRENT/DEFINE-final-n166.md`](docs/CURRENT/DEFINE-final-n166.md), единый аудит early-99/full-166 — в [`docs/CURRENT/research/`](docs/CURRENT/research/README.md).
 
 ---
 

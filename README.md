@@ -325,7 +325,8 @@ user has interacted with the page at least once.
 | [`docs/state-management.md`](docs/state-management.md) | State & interaction rules (incl. what is *not* implemented yet) |
 | [`docs/gestures-motion.md`](docs/gestures-motion.md) | Left-handed mode / ergonomics — future spec |
 | [`docs/ai-manifesto.md`](docs/ai-manifesto.md) | Why Flow exists: the product philosophy |
-| [`docs/CURRENT/DEFINE.md`](docs/CURRENT/DEFINE.md) | User research (n=99, RU/EN/ES), personas, success metrics |
+| [`docs/CURRENT/DEFINE-final-n166.md`](docs/CURRENT/DEFINE-final-n166.md) | Final user research (n=166, RU/EN/ES), affinity mapping, personas and HMW; [initial n=99 Define](docs/CURRENT/DEFINE.md) retained as history |
+| [`docs/CURRENT/research/`](docs/CURRENT/research/README.md) | Analysis protocol v1, codebook, dependency-free XLSX analyzer and reproducible early-99 / late-67 / full-166 aggregates |
 | [`docs/components/`](docs/components) | Component specs: `TimeBlock`, `TaskSheet`, `Task indicator` |
 | [`docs/figma/`](docs/figma) | Figma token exports (light/dark variables, master spec) |
 | [`docs/specs/`](docs/specs) | Future specs: energy peak planner, audio neural engine, audio events |
@@ -409,7 +410,7 @@ The license includes patent protection and requires preserving copyright and lic
 - **Inter** by Rasmus Andersson — SIL Open Font License 1.1.
 - **Web Speech API** for on-device speech recognition and synthesis.
 - Ambient alarm sounds courtesy of [Mixkit](https://mixkit.co/free-sound-effects/).
-- Product decisions are grounded in the n=99 user study documented in [`docs/CURRENT/DEFINE.md`](docs/CURRENT/DEFINE.md).
+- Early prototyping and dogfooding preceded the survey. Later research checks problem relevance beyond the author and informs current hypotheses; it does not establish product outcomes. The final n=166 synthesis is in [`docs/CURRENT/DEFINE-final-n166.md`](docs/CURRENT/DEFINE-final-n166.md), with the unified early-99/full-166 audit in [`docs/CURRENT/research/`](docs/CURRENT/research/README.md).
 
 ---
 

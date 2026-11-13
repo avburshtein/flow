@@ -1,0 +1,107 @@
+{
+  "protocol_version": "1.0.0",
+  "source_file": "Исследование привычек планирования.xlsx",
+  "source_sha256": "3f44578a4dc3139e2e62bf46516c8877759f15da9e2b3213d3cc2a602e591490",
+  "cohorts": {
+    "early99": {
+      "n": 99,
+      "first_submission_date": "2026-05-03",
+      "last_submission_date": "2026-05-19"
+    },
+    "late67": {
+      "n": 67,
+      "first_submission_date": "2026-05-20",
+      "last_submission_date": "2026-07-17"
+    },
+    "full166": {
+      "n": 166,
+      "first_submission_date": "2026-05-03",
+      "last_submission_date": "2026-07-17"
+    }
+  },
+  "primary_full166": {
+    "unfinished_manual": {
+      "numerator": 92,
+      "denominator": 163,
+      "percent": 56.4
+    },
+    "unfinished_accumulation": {
+      "numerator": 60,
+      "denominator": 163,
+      "percent": 36.8
+    },
+    "unfinished_intersection": {
+      "numerator": 23,
+      "denominator": 163,
+      "percent": 14.1
+    },
+    "unfinished_union": {
+      "numerator": 129,
+      "denominator": 163,
+      "percent": 79.1
+    },
+    "likert_state_top2": {
+      "numerator": 89,
+      "denominator": 163,
+      "percent": 54.6
+    },
+    "likert_capacity_top2": {
+      "numerator": 86,
+      "denominator": 163,
+      "percent": 52.8
+    },
+    "likert_small_top2": {
+      "numerator": 78,
+      "denominator": 163,
+      "percent": 47.9
+    },
+    "likert_overload_top2": {
+      "numerator": 59,
+      "denominator": 163,
+      "percent": 36.2
+    },
+    "likert_clarity_top2": {
+      "numerator": 39,
+      "denominator": 163,
+      "percent": 23.9
+    },
+    "add_tasks_voice": {
+      "numerator": 5,
+      "denominator": 163,
+      "percent": 3.1
+    },
+    "focus_fixed_morning": {
+      "numerator": 48,
+      "denominator": 120,
+      "percent": 40
+    },
+    "focus_fixed_evening": {
+      "numerator": 50,
+      "denominator": 120,
+      "percent": 41.7
+    },
+    "focus_no_fixed": {
+      "numerator": 43,
+      "denominator": 163,
+      "percent": 26.4
+    }
+  },
+  "validation": {
+    "unique_submission_count": 166,
+    "headline_invariants": "passed",
+    "open_base_invariants": "passed",
+    "deterministic_outputs": true,
+    "direct_identifiers_in_outputs": false
+  },
+  "outputs": [
+    "aggregates-early99.csv",
+    "aggregates-late67.csv",
+    "aggregates-full166.csv",
+    "open-themes-early99.csv",
+    "open-audit-early99.csv",
+    "open-themes-full166.csv",
+    "open-audit-full166.csv",
+    "analysis-report.md",
+    "analysis-manifest.json"
+  ]
+}
